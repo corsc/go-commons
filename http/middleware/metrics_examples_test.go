@@ -22,37 +22,37 @@ import (
 )
 
 func ExampleDuration_trackSingleEndpoint() {
-	http.Handle("/foo", middleware.Duration(fooHandler{}, &myMetricsClient{}))
+	http.Handle("/foo", middleware.Duration(http.HandlerFunc(fooHandler), &myMetricsClient{}))
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func ExampleDuration_trackSingleEndpointWithTag() {
-	http.Handle("/foo", middleware.Duration(fooHandler{}, &myMetricsClient{}, "/foo"))
+	http.Handle("/foo", middleware.Duration(http.HandlerFunc(fooHandler), &myMetricsClient{}, "/foo"))
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func ExampleDuration_trackAllEndpoints() {
-	http.Handle("/foo", fooHandler{})
+	http.Handle("/foo", http.HandlerFunc(fooHandler))
 
 	log.Fatal(http.ListenAndServe(":8080", middleware.Duration(http.DefaultServeMux, &myMetricsClient{})))
 }
 
 func ExampleDurationStatus_trackSingleEndpoint() {
-	http.Handle("/foo", middleware.DurationStatus(fooHandler{}, &myMetricsClient{}))
+	http.Handle("/foo", middleware.DurationStatus(http.HandlerFunc(fooHandler), &myMetricsClient{}))
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func ExampleDurationStatus_trackSingleEndpointWithTag() {
-	http.Handle("/foo", middleware.DurationStatus(fooHandler{}, &myMetricsClient{}, "/foo"))
+	http.Handle("/foo", middleware.DurationStatus(http.HandlerFunc(fooHandler), &myMetricsClient{}, "/foo"))
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func ExampleDurationStatus_trackAllEndpoints() {
-	http.Handle("/foo", fooHandler{})
+	http.Handle("/foo", http.HandlerFunc(fooHandler))
 
 	log.Fatal(http.ListenAndServe(":8080", middleware.DurationStatus(http.DefaultServeMux, &myMetricsClient{})))
 }

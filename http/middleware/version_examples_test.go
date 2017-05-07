@@ -22,13 +22,13 @@ import (
 )
 
 func ExampleVersion_singleEndpoint() {
-	http.Handle("/foo", middleware.Version(fooHandler{}, "X-Version", "1.2.3"))
+	http.Handle("/foo", middleware.Version(http.HandlerFunc(fooHandler), "X-Version", "1.2.3"))
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func ExampleVersion_trackAllEndpoints() {
-	http.Handle("/foo", fooHandler{})
+	http.Handle("/foo", http.HandlerFunc(fooHandler))
 
 	log.Fatal(http.ListenAndServe(":8080", middleware.Version(http.DefaultServeMux, "X-Version", "1.2.3")))
 }

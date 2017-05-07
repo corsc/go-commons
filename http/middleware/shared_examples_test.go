@@ -21,10 +21,7 @@ import (
 )
 
 // handle foo requests
-type fooHandler struct{}
-
-// ServeHTTP implements the http.Handler
-func (h fooHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+func fooHandler(resp http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(resp, "hello foo")
 }
 
