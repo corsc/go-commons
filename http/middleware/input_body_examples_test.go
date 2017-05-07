@@ -15,20 +15,21 @@
 package middleware_test
 
 import (
-	"fmt"
+	"log"
 	"net/http"
-	"time"
+
+	"github.com/corsc/go-commons/http/middleware"
 )
 
-// handle foo requests
-func fooHandler(resp http.ResponseWriter, req *http.Request) {
-	fmt.Fprint(resp, "hello foo")
+func ExampleInputBody() {
+	http.Handle("/foo", middleware.InputBody(http.HandlerFunc(fooHandler), &fooRequestDTO{}))
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-// simple implementation of the MetricsClient interface
-type myMetricsClient struct{}
-
-// Duration implements MetricsClient
-func (m *myMetricsClient) Duration(key string, start time.Time, tags ...string) {
-	// send metrics to server
+// request format for foo
+type fooRequestDTO struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Age   int    `json:"age"`
 }
