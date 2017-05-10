@@ -28,8 +28,8 @@ type MetricsClient interface {
 }
 
 // Duration will track the duration (and usage) of the method.
-//
-// It is based on statsD but it could be used with any capable metrics client.
+// It is based on statsD but it could be used with other metrics clients.
+// Note: this middleware should typically be applied first (in order to run last)
 func Duration(handler http.Handler, metrics MetricsClient, extraTags ...string) http.HandlerFunc {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		defer metrics.Duration("api", time.Now(), extraTags...)
@@ -39,8 +39,8 @@ func Duration(handler http.Handler, metrics MetricsClient, extraTags ...string) 
 }
 
 // DurationStatus is similar to Duration but also tracks the HTTP response code (via tags)
-//
-// It is based on statsD but it could be used with any capable metrics client.
+// It is based on statsD but it could be used with other metrics clients.
+// Note: this middleware should typically be applied first (in order to run last)
 func DurationStatus(handler http.Handler, metrics MetricsClient, extraTags ...string) http.HandlerFunc {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		start := time.Now()

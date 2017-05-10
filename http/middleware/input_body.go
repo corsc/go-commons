@@ -22,7 +22,9 @@ import (
 )
 
 // key used to store the DTO in the context
-var inputBodyDTO = struct{}{}
+type inputBodyKey int
+
+var inputBodyDTO inputBodyKey
 
 // LoggingClient allows for logging
 type LoggingClient interface {

@@ -10,25 +10,35 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations un
 
-package middleware_test
+package middleware
 
 import (
-	"fmt"
-	"net/http"
-	"time"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// handle foo requests
-func fooHandler(resp http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(resp, "hello foo")
+func TestOutputJSON(t *testing.T) {
+	dto := &fooResponse{
+		Name:  "bob",
+		Email: "bob@home.com",
+		Age:   12,
+	}
+
+	expected := `{"name":"bob","email":"bob@home.com","age":12}
+`
+
+	resp := httptest.NewRecorder()
+	OutputJSON(resp, dto)
+
+	assert.Equal(t, expected, resp.Body.String())
 }
 
-// simple implementation of the MetricsClient interface
-type myMetricsClient struct{}
-
-// Duration implements MetricsClient
-func (m *myMetricsClient) Duration(key string, start time.Time, tags ...string) {
-	// send metrics to server
+type fooResponse struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Age   int    `json:"age"`
 }

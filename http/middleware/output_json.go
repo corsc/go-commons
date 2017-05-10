@@ -12,23 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package middleware_test
+package middleware
 
 import (
-	"fmt"
+	"encoding/json"
+	"errors"
 	"net/http"
-	"time"
 )
 
-// handle foo requests
-func fooHandler(resp http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(resp, "hello foo")
-}
+// OutputJSON will attempt to encode the supplied DTO into JSON bytes and add to the response.
+// On success it will add status header of HTTP 200 (OK)
+func OutputJSON(resp http.ResponseWriter, dto interface{}) error {
+	if dto == nil {
+		return errors.New("supplied DTO was empty")
+	}
 
-// simple implementation of the MetricsClient interface
-type myMetricsClient struct{}
+	encoder := json.NewEncoder(resp)
+	err := encoder.Encode(dto)
+	if err != nil {
+		return err
+	}
 
-// Duration implements MetricsClient
-func (m *myMetricsClient) Duration(key string, start time.Time, tags ...string) {
-	// send metrics to server
+	resp.WriteHeader(http.StatusOK)
+	return nil
 }
