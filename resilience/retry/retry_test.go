@@ -32,7 +32,7 @@ func TestRetry_Do_happyPath(t *testing.T) {
 	}
 
 	// create a retry client with all the defaults
-	retry := &Retry{}
+	retry := &Client{}
 
 	resultErr := retry.Do(context.Background(), "foo", happyLambda)
 	assert.Nil(t, resultErr)
@@ -41,14 +41,14 @@ func TestRetry_Do_happyPath(t *testing.T) {
 
 func TestRetry_Do_happyPathMetrics(t *testing.T) {
 	mockMetrics := &mockMetricsClient{}
-	mockMetrics.On("Count", "foo", mock.Anything)
+	mockMetrics.On("Incr", "foo", mock.Anything)
 
 	happyLambda := func() error {
 		return nil
 	}
 
 	// create a retry client with defaults and mock metrics
-	retry := &Retry{
+	retry := &Client{
 		Metrics: mockMetrics,
 	}
 
@@ -65,7 +65,7 @@ func TestRetry_Do_error(t *testing.T) {
 	}
 
 	// create a retry client with all the defaults
-	retry := &Retry{}
+	retry := &Client{}
 
 	resultErr := retry.Do(context.Background(), "foo", sadLambda)
 	assert.Equal(t, ErrAttemptsExceeded, resultErr)
@@ -80,7 +80,7 @@ func TestRetry_Do_fatalError(t *testing.T) {
 	}
 
 	// create a retry client with defaults and custom fatal error detection
-	retry := &Retry{
+	retry := &Client{
 		CanRetry: func(err error) bool {
 			return false
 		},
@@ -126,7 +126,7 @@ func TestRetry_Do_sleep(t *testing.T) {
 
 	for _, scenario := range scenarios {
 		t.Run(scenario.desc, func(t *testing.T) {
-			retry := &Retry{}
+			retry := &Client{}
 
 			result := retry.getSleep(scenario.attempt)
 
@@ -144,7 +144,7 @@ func TestRetry_Do_contextAlreadyDone(t *testing.T) {
 	}
 
 	// create a retry client with defaults and custom fatal error detection
-	retry := &Retry{}
+	retry := &Client{}
 
 	// create closed context
 	ctx, cancelFunc := context.WithCancel(context.Background())
@@ -164,7 +164,7 @@ func TestRetry_Do_contextTimeoutDuringAttempts(t *testing.T) {
 	}
 
 	// create a retry client with silly settings
-	retry := &Retry{
+	retry := &Client{
 		MaxAttempts: 100,
 		BaseDelay:   1 * time.Second,
 		MaxDelay:    10 * time.Second,
@@ -189,7 +189,7 @@ func TestRetry_Do_contextTimeoutSlowLambda(t *testing.T) {
 	}
 
 	// create a retry client with silly settings
-	retry := &Retry{}
+	retry := &Client{}
 
 	// create closed context
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Millisecond)
@@ -204,7 +204,7 @@ type mockMetricsClient struct {
 	mock.Mock
 }
 
-// Count implements MetricsClient
-func (m *mockMetricsClient) Count(key string, tags ...string) {
+// Incr implements MetricsClient
+func (m *mockMetricsClient) Incr(key string, tags ...string) {
 	m.Called(key, tags)
 }

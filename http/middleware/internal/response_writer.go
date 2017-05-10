@@ -14,7 +14,9 @@
 
 package internal
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // NewCustomResponseWriter returns a CustomResponseWriter from the supplied http.ResponseWriter
 func NewCustomResponseWriter(resp http.ResponseWriter) *CustomResponseWriter {

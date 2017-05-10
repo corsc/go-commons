@@ -35,11 +35,11 @@ var ErrAttemptsExceeded = errors.New("exceeded max attempts")
 
 // MetricsClient defines the metrics interface used by this package
 type MetricsClient interface {
-	Count(key string, tags ...string)
+	Incr(key string, tags ...string)
 }
 
-// Retry implements the Exponential Backoff
-type Retry struct {
+// Client implements the Exponential Backoff
+type Client struct {
 	// MaxAttempts is the maximum number of retry attempts before giving up. (default: 3)
 	MaxAttempts int
 
@@ -58,10 +58,10 @@ type Retry struct {
 }
 
 // Do executes the lambda until success, context is cancelled, attempts are exceeded or a fatal error.
-func (r *Retry) Do(ctx context.Context, metricKey string, do func() error) error {
+func (r *Client) Do(ctx context.Context, metricKey string, do func() error) error {
 	for attempt := 0; attempt < r.getMaxAttempts(); attempt++ {
 		if ctx.Err() != nil {
-			r.getMetrics().Count(metricKey, "type:error", "cause:context")
+			r.getMetrics().Incr(metricKey, "type:error", "cause:context")
 			return ctx.Err()
 		}
 
@@ -80,16 +80,16 @@ func (r *Retry) Do(ctx context.Context, metricKey string, do func() error) error
 		select {
 		case err := <-doChan:
 			if err == nil {
-				r.getMetrics().Count(metricKey, "type:success")
+				r.getMetrics().Incr(metricKey, "type:success")
 				return nil
 			}
 			if !r.canRetry(err) {
-				r.getMetrics().Count(metricKey, "type:error", "cause:fatal")
+				r.getMetrics().Incr(metricKey, "type:error", "cause:fatal")
 				return err
 			}
 
 		case <-ctx.Done():
-			r.getMetrics().Count(metricKey, "type:error", "cause:context")
+			r.getMetrics().Incr(metricKey, "type:error", "cause:context")
 			return ctx.Err()
 		}
 
@@ -100,17 +100,17 @@ func (r *Retry) Do(ctx context.Context, metricKey string, do func() error) error
 			// nothing
 
 		case <-ctx.Done():
-			r.getMetrics().Count(metricKey, "type:error", "cause:context")
+			r.getMetrics().Incr(metricKey, "type:error", "cause:context")
 			return ctx.Err()
 		}
 	}
 
 	// give up
-	r.getMetrics().Count(metricKey, "type:error", "cause:attempts")
+	r.getMetrics().Incr(metricKey, "type:error", "cause:attempts")
 	return ErrAttemptsExceeded
 }
 
-func (r *Retry) getSleep(attempt int) time.Duration {
+func (r *Client) getSleep(attempt int) time.Duration {
 	maxDelayFloat := float64(r.getMaxDelay())
 
 	delayByAttempt := float64(r.getBaseDelay()) * 2 * math.Exp2(float64(attempt))
@@ -122,7 +122,7 @@ func (r *Retry) getSleep(attempt int) time.Duration {
 	return time.Duration(sleep)
 }
 
-func (r *Retry) getMaxAttempts() int {
+func (r *Client) getMaxAttempts() int {
 	if r.MaxAttempts > 0 {
 		return r.MaxAttempts
 	}
@@ -130,7 +130,7 @@ func (r *Retry) getMaxAttempts() int {
 	return defaultMaxAttempts
 }
 
-func (r *Retry) getBaseDelay() int64 {
+func (r *Client) getBaseDelay() int64 {
 	if int64(r.BaseDelay) > int64(0) {
 		return int64(r.BaseDelay)
 	}
@@ -138,7 +138,7 @@ func (r *Retry) getBaseDelay() int64 {
 	return int64(defaultBaseDelay)
 }
 
-func (r *Retry) getMaxDelay() int64 {
+func (r *Client) getMaxDelay() int64 {
 	if int64(r.MaxDelay) > int64(0) {
 		return int64(r.MaxDelay)
 	}
@@ -146,7 +146,7 @@ func (r *Retry) getMaxDelay() int64 {
 	return int64(defaultMaxDelay)
 }
 
-func (r *Retry) canRetry(err error) bool {
+func (r *Client) canRetry(err error) bool {
 	if r.CanRetry != nil {
 		return r.CanRetry(err)
 	}
@@ -154,7 +154,7 @@ func (r *Retry) canRetry(err error) bool {
 	return true
 }
 
-func (r *Retry) getMetrics() MetricsClient {
+func (r *Client) getMetrics() MetricsClient {
 	if r.Metrics != nil {
 		return r.Metrics
 	}
@@ -163,6 +163,6 @@ func (r *Retry) getMetrics() MetricsClient {
 
 type noopMetrics struct{}
 
-func (n *noopMetrics) Count(key string, tags ...string) {
+func (n *noopMetrics) Incr(key string, tags ...string) {
 	// intentionally does nothing
 }

@@ -16,11 +16,10 @@ package retry_test
 
 import (
 	"context"
-	"fmt"
-	"time"
-
 	"errors"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/corsc/go-commons/resilience/retry"
 )
@@ -30,7 +29,7 @@ func ExampleRetry_Do() {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
 
-	err := (&retry.Retry{}).Do(ctx, "myretry", func() error {
+	err := (&retry.Client{}).Do(ctx, "myretry", func() error {
 		// do something amazing here
 		return nil
 	})
@@ -48,7 +47,7 @@ func ExampleRetry_Do_customErrorHandling() {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
 
-	retry := &retry.Retry{
+	client := &retry.Client{
 		CanRetry: func(err error) bool {
 			if err == ErrUserError {
 				return false
@@ -60,7 +59,7 @@ func ExampleRetry_Do_customErrorHandling() {
 		},
 	}
 
-	err := retry.Do(ctx, "myretry", func() error {
+	err := client.Do(ctx, "myretry", func() error {
 		resp, err := http.Get("http://www.google.com/")
 		if err != nil {
 			// pass HTTP client errors out

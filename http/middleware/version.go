@@ -14,7 +14,9 @@
 
 package middleware
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // Version will apply a version header to all responses
 func Version(handler http.Handler, header string, version string) http.HandlerFunc {
