@@ -46,7 +46,7 @@ func InputBody(handler http.Handler, dto interface{}, client ...LoggingClient) h
 		}
 
 		// store the DTO into the context
-		req = req.WithContext(context.WithValue(req.Context(), inputBodyDTO, dtoCopy))
+		req = InputBodySetDTO(req, dtoCopy)
 
 		handler.ServeHTTP(resp, req)
 	})
@@ -56,6 +56,12 @@ func InputBody(handler http.Handler, dto interface{}, client ...LoggingClient) h
 // NOTE: this method should be used in conjunction with `InputBody()`
 func InputBodyDTO(req *http.Request) interface{} {
 	return req.Context().Value(inputBodyDTO)
+}
+
+// InputBodySetDTO sets the supplied DTO into the context.
+// This method will generally be used onluy during testing.
+func InputBodySetDTO(req *http.Request, dto interface{}) *http.Request {
+	return req.WithContext(context.WithValue(req.Context(), inputBodyDTO, dto))
 }
 
 // convenience method for logging when the logging client was supplied (via optional/variadic arg)
