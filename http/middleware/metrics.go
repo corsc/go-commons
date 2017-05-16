@@ -47,7 +47,7 @@ func DurationStatus(handler http.Handler, metrics MetricsClient, extraTags ...st
 
 		crw := internal.NewCustomResponseWriter(resp)
 
-		handler.ServeHTTP(resp, req)
+		handler.ServeHTTP(crw, req)
 
 		metrics.Duration("api", start, append(extraTags, "status:"+strconv.Itoa(crw.Status()))...)
 	})
