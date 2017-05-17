@@ -63,7 +63,7 @@ func ExampleClient_httpHandler() {
 		_, _ = resp.Write(data)
 	}
 
-	_ = http.ListenAndServe("", http.HandlerFunc(handler))
+	_ = http.ListenAndServe(":8080", http.HandlerFunc(handler))
 }
 
 func buildCacheKey(_ *http.Request) string {

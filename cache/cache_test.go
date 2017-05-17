@@ -199,7 +199,7 @@ func (c *Client) waitForPending(maxWait time.Duration) error {
 			return errors.New("timeout waiting for pending writes")
 
 		default:
-			if atomic.LoadUint64(&c.pendingWrites) == 0 {
+			if atomic.LoadInt64(&c.pendingWrites) == 0 {
 				return nil
 			}
 		}

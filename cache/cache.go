@@ -15,12 +15,20 @@ import (
 //
 // It is not recommended to change this struct's member data after creation as a data race will likely ensue.
 type Client struct {
+	// Storage is the cache storage scheme. (Required)
 	Storage Storage
-	Logger  Logger
+
+	// Logger defines a logger to used for errors during async cache writes (optional)
+	Logger Logger
+
+	// Metrics allow for tracking cache events (hit/miss/etc) (optional)
 	Metrics Metrics
 
+	// WriteTimeout is the max time spent waiting for cache writes to complete (optional - default 3 seconds)
+	WriteTimeout time.Duration
+
 	// track pending cache writes
-	pendingWrites uint64
+	pendingWrites int64
 }
 
 // Get attempts to retrieve the value from cache and when it misses will run the builder func to create the value.
@@ -30,25 +38,33 @@ func (c *Client) Get(ctx context.Context, key string, dest BinaryEncoder, builde
 	bytes, err := c.Storage.Get(ctx, key)
 	if err != nil {
 		if err == errCacheMiss {
-			c.getMetrics().Track(CacheMiss)
-
-			err = builder.Build(ctx, key, dest)
-			if err != nil {
-				c.getMetrics().Track(CacheLambdaError)
-				return err
-			}
-
-			atomic.AddUint64(&c.pendingWrites, 1)
-			go c.updateCache(key, dest)
-
-			return err
+			return c.onCacheMiss(ctx, key, dest, builder)
 		}
 
 		c.getMetrics().Track(CacheError)
 		return err
 	}
 
-	err = dest.UnmarshalBinary(bytes)
+	return c.onCacheHit(dest, bytes)
+}
+
+func (c *Client) onCacheMiss(ctx context.Context, key string, dest BinaryEncoder, builder Builder) error {
+	c.getMetrics().Track(CacheMiss)
+
+	err := builder.Build(ctx, key, dest)
+	if err != nil {
+		c.getMetrics().Track(CacheLambdaError)
+		return err
+	}
+
+	atomic.AddInt64(&c.pendingWrites, 1)
+	go c.updateCache(key, dest)
+
+	return err
+}
+
+func (c *Client) onCacheHit(dest encoding.BinaryUnmarshaler, bytes []byte) error {
+	err := dest.UnmarshalBinary(bytes)
 	if err != nil {
 		c.getMetrics().Track(CacheUnmarshalError)
 		return err
@@ -62,11 +78,11 @@ func (c *Client) Get(ctx context.Context, key string, dest BinaryEncoder, builde
 func (c *Client) updateCache(key string, val encoding.BinaryMarshaler) {
 	defer func() {
 		// update tracking
-		atomic.AddUint64(&c.pendingWrites, ^uint64(0))
+		atomic.AddInt64(&c.pendingWrites, -1)
 	}()
 
 	// use independent context so we don't miss cache updated
-	ctx, cancelFn := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), c.getWriteTimeout())
 	defer cancelFn()
 
 	bytes, err := val.MarshalBinary()
@@ -97,6 +113,15 @@ func (c *Client) getMetrics() Metrics {
 	}
 
 	return noopMetrics
+}
+
+// return the timeout on cache writes
+func (c *Client) getWriteTimeout() time.Duration {
+	if int64(c.WriteTimeout) > 0 {
+		return c.WriteTimeout
+	}
+
+	return 3 * time.Second
 }
 
 // Builder builds the data for a key
