@@ -5,10 +5,20 @@ import (
 	"sync"
 	"time"
 
+	"github.com/afex/hystrix-go/hystrix"
 	"github.com/garyburd/redigo/redis"
 )
 
 // RedisStorage implements Storage
+//
+// It is strongly recommended that users customize the circuit breaker settings with a call similar to:
+//
+//    hystrix.ConfigureCommand(cache.CbRedisStorage, hystrix.CommandConfig{
+//        Timeout: 1 * 1000,
+//        MaxConcurrentRequests: 1000,
+//        ErrorPercentThreshold: 50,
+//        })
+//
 type RedisStorage struct {
 	// Pool is the redis connection pool (required)
 	Pool *redis.Pool
@@ -23,30 +33,22 @@ type RedisStorage struct {
 
 // Get implements Storage
 func (r *RedisStorage) Get(ctx context.Context, key string) ([]byte, error) {
-	select {
-	case resp := <-r.asyncDo("GET", key):
-		bytes, err := redis.Bytes(resp.reply, resp.err)
-		if err == redis.ErrNil {
-			return nil, errCacheMiss
-		}
-		return bytes, err
-
-	case <-ctx.Done():
-		// context cancel/timeout
-		return nil, ctx.Err()
+	resp, err := r.do(ctx, redisGet, key)
+	if err != nil {
+		return nil, err
 	}
+
+	bytes, err := redis.Bytes(resp, err)
+	if err == redis.ErrNil {
+		return nil, errCacheMiss
+	}
+	return bytes, err
 }
 
 // Set implements Storage
 func (r *RedisStorage) Set(ctx context.Context, key string, bytes []byte) error {
-	select {
-	case resp := <-r.asyncDo("SETEX", key, r.GetTTL(), bytes):
-		return resp.err
-
-	case <-ctx.Done():
-		// context cancel/timeout
-		return ctx.Err()
-	}
+	_, err := r.do(ctx, redisSetex, key, r.GetTTL(), bytes)
+	return err
 }
 
 // GetTTL implements Storage
@@ -58,25 +60,33 @@ func (r *RedisStorage) GetTTL() int64 {
 	return r.ttlInSeconds
 }
 
-// Asynchronously perform a redis command
-//
-// This method is used to add "context" support to redigo calls
-func (r *RedisStorage) asyncDo(command string, args ...interface{}) chan *redisResponse {
-	redisRespCh := make(chan *redisResponse, 1)
-
-	go func() {
+// calls to redis protected by a circuit breaker
+func (r *RedisStorage) do(ctx context.Context, command string, args ...interface{}) (interface{}, error) {
+	resultCh := make(chan interface{}, 1)
+	errorCh := hystrix.Go(CbRedisStorage, func() error {
 		con := r.Pool.Get()
 
-		output := &redisResponse{}
-		output.reply, output.err = con.Do(command, args...)
-		redisRespCh <- output
-	}()
+		reply, err := con.Do(command, args...)
+		if err != nil {
+			return err
+		}
 
-	return redisRespCh
-}
+		resultCh <- reply
 
-// dto for passing responses out of RedisStorage.asyncDo
-type redisResponse struct {
-	reply interface{}
-	err   error
+		return nil
+	}, nil)
+
+	select {
+	case result := <-resultCh:
+		// success
+		return result, nil
+
+	case <-ctx.Done():
+		// timeout/context cancelled
+		return nil, ctx.Err()
+
+	case err := <-errorCh:
+		// failure
+		return nil, err
+	}
 }

@@ -30,3 +30,13 @@ const (
 	// If the BinaryEncoder is implemented correctly, this event should never happen
 	CacheUnmarshalError
 )
+
+const (
+	// CbRedisStorage is tag for redis storage circuit breaker.
+	// This should be used for in calls to `hystrix.ConfigureCommand()`
+	CbRedisStorage = "CbRedisStorage"
+
+	// redis commands
+	redisGet   = "GET"
+	redisSetex = "SETEX"
+)
