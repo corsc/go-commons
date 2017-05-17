@@ -11,18 +11,17 @@ var ErrCacheMiss = errors.New("cache miss")
 
 type Client struct {
 	Storage Storage
-	Builder Builder
 	Logger  LoggerFn
 }
 
-func (c *Client) Get(ctx context.Context, key string, dest Binary) error {
+func (c *Client) Get(ctx context.Context, key string, dest Binary, builder Builder) error {
 	bytes, err := c.Storage.Get(ctx, key)
 	if err != nil {
 		if err != ErrCacheMiss {
 			return err
 		}
 
-		err = c.Builder.Build(ctx, key, dest)
+		err = builder.Build(ctx, key, dest)
 		if err != nil {
 			return err
 		}
