@@ -3,76 +3,118 @@ package cache
 import (
 	"context"
 	"encoding"
-	"errors"
+	"sync/atomic"
+	"time"
 )
 
-// ErrCacheMiss is returned when the cache does not contain the requested key
-var ErrCacheMiss = errors.New("cache miss")
-
+// Client defines a cache instance.
+//
+// This can represent the cache for the entire system or for a particular use-case/type.
+//
+// If a cache is used for multiple purposes, then care must be taken to ensure uniqueness of cache keys.
+//
+// It is not recommended to change this struct's member data after creation as a data race will likely ensue.
 type Client struct {
 	Storage Storage
-	Logger  LoggerFn
+	Logger  Logger
+	Metrics Metrics
+
+	// track pending cache writes
+	pendingWrites uint64
 }
 
-func (c *Client) Get(ctx context.Context, key string, dest Binary, builder Builder) error {
+// Get attempts to retrieve the value from cache and when it misses will run the builder func to create the value.
+//
+// It will asynchronously update/save the value in the cache on after a successful builder run
+func (c *Client) Get(ctx context.Context, key string, dest BinaryEncoder, builder Builder) error {
 	bytes, err := c.Storage.Get(ctx, key)
 	if err != nil {
-		if err != ErrCacheMiss {
+		if err == errCacheMiss {
+			c.getMetrics().Track(CacheMiss)
+
+			err = builder.Build(ctx, key, dest)
+			if err != nil {
+				c.getMetrics().Track(CacheLambdaError)
+				return err
+			}
+
+			atomic.AddUint64(&c.pendingWrites, 1)
+			go c.updateCache(key, dest)
+
 			return err
 		}
 
-		err = builder.Build(ctx, key, dest)
-		if err != nil {
-			return err
-		}
-
-		// async update cache
-		go c.updateCache(ctx, key, dest)
-
-		return nil
+		c.getMetrics().Track(CacheError)
+		return err
 	}
 
-	return dest.UnmarshalBinary(bytes)
+	err = dest.UnmarshalBinary(bytes)
+	if err != nil {
+		c.getMetrics().Track(CacheUnmarshalError)
+		return err
+	}
+
+	c.getMetrics().Track(CacheHit)
+	return nil
 }
 
-func (c *Client) updateCache(ctx context.Context, key string, val Binary) {
+// update the cache with the supplied key/value pair
+func (c *Client) updateCache(key string, val encoding.BinaryMarshaler) {
+	defer func() {
+		// update tracking
+		atomic.AddUint64(&c.pendingWrites, ^uint64(0))
+	}()
+
+	// use independent context so we don't miss cache updated
+	ctx, cancelFn := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancelFn()
+
 	bytes, err := val.MarshalBinary()
 	if err != nil {
-		c.getLogger()("failed marshal '%s' from cache with err: %s", key, err)
+		c.getLogger().Log("failed marshal '%s' from cache with err: %s", key, err)
 		return
 	}
 
 	err = c.Storage.Set(ctx, key, bytes)
 	if err != nil {
-		c.getLogger()("failed to update item '%s' in cache with err: %s", key, err)
+		c.getLogger().Log("failed to update item '%s' in cache with err: %s", key, err)
 	}
 }
 
-func (c *Client) getLogger() LoggerFn {
+// return the supplied logger or a no-op implementation
+func (c *Client) getLogger() Logger {
 	if c.Logger != nil {
 		return c.Logger
 	}
 
-	return func(message string, args ...interface{}) {
-		// skip logging
-	}
+	return noopLogger
 }
 
-type LoggerFn func(message string, args ...interface{})
+// return the supplied metric tracker or a no-op implementation
+func (c *Client) getMetrics() Metrics {
+	if c.Metrics != nil {
+		return c.Metrics
+	}
 
+	return noopMetrics
+}
+
+// Builder builds the data for a key
 type Builder interface {
-	Build(ctx context.Context, key string, dest Binary) error
+	// Build returns the data for the supplied key by populating dest
+	Build(ctx context.Context, key string, dest BinaryEncoder) error
 }
 
 // BuilderFunc implements Builder as a function
-type BuilderFunc func(ctx context.Context, key string, dest Binary)
+type BuilderFunc func(ctx context.Context, key string, dest BinaryEncoder) error
 
 // Build implements Builder
-func (b BuilderFunc) Build(ctx context.Context, key string, dest Binary) error {
-	return b.Build(ctx, key, dest)
+func (b BuilderFunc) Build(ctx context.Context, key string, dest BinaryEncoder) error {
+	return b(ctx, key, dest)
 }
 
-type Binary interface {
+// BinaryEncoder encodes/decodes the receiver to and from binary form
+type BinaryEncoder interface {
 	encoding.BinaryMarshaler
 	encoding.BinaryUnmarshaler
 }

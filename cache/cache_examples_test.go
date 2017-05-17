@@ -3,6 +3,7 @@ package cache_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/corsc/go-commons/cache"
@@ -11,7 +12,7 @@ import (
 func ExampleClient_normalUsage() {
 	// init - called once; perhaps a global variable or member variable
 	cacheClient := &cache.Client{
-		Storage: &cache.RedigoStorage{},
+		Storage: &cache.RedisStorage{},
 	}
 
 	// general usage
@@ -21,8 +22,9 @@ func ExampleClient_normalUsage() {
 	cacheKey := "cache.key"
 	dest := &myDTO{}
 
-	err := cacheClient.Get(ctx, cacheKey, dest, cache.BuilderFunc(func(ctx context.Context, key string, dest cache.Binary) {
+	err := cacheClient.Get(ctx, cacheKey, dest, cache.BuilderFunc(func(ctx context.Context, key string, dest cache.BinaryEncoder) error {
 		// logic that builds/marshals the cacheable value
+		return errors.New("not implemented")
 	}))
 
 	if err != nil {
@@ -33,7 +35,7 @@ func ExampleClient_normalUsage() {
 func ExampleClient_httpHandler() {
 	// init - called once; perhaps a global variable or member variable
 	userCache := &cache.Client{
-		Storage: &cache.RedigoStorage{},
+		Storage: &cache.RedisStorage{},
 	}
 
 	// the HTTP Handler
@@ -41,8 +43,9 @@ func ExampleClient_httpHandler() {
 		key := buildCacheKey(req)
 		outputDTO := &myDTO{}
 
-		err := userCache.Get(req.Context(), key, outputDTO, cache.BuilderFunc(func(ctx context.Context, key string, dest cache.Binary) {
+		err := userCache.Get(req.Context(), key, outputDTO, cache.BuilderFunc(func(ctx context.Context, key string, dest cache.BinaryEncoder) error {
 			// logic that builds/marshals the cacheable value
+			return errors.New("not implemented")
 		}))
 
 		if err != nil {
@@ -57,13 +60,13 @@ func ExampleClient_httpHandler() {
 		}
 
 		resp.WriteHeader(http.StatusOK)
-		resp.Write(data)
+		_, _ = resp.Write(data)
 	}
 
-	_ = http.ListenAndServe("/", http.HandlerFunc(handler))
+	_ = http.ListenAndServe("", http.HandlerFunc(handler))
 }
 
-func buildCacheKey(req *http.Request) string {
+func buildCacheKey(_ *http.Request) string {
 	// do something clever here that uses the inputs to generated a predictable key
 	return ""
 }
@@ -73,12 +76,12 @@ type myDTO struct {
 	Email string
 }
 
-// MarshalBinary implements cache.Binary
+// MarshalBinary implements cache.BinaryEncoder
 func (m *myDTO) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(m)
 }
 
-// UnmarshalBinary implements cache.Binary
+// UnmarshalBinary implements cache.BinaryEncoder
 func (m *myDTO) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, m)
 }
