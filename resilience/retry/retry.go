@@ -24,8 +24,8 @@ import (
 
 const (
 	defaultMaxAttempts = 3
-	defaultBaseDelay   = time.Duration(10 * time.Millisecond)
-	defaultMaxDelay    = time.Duration(1 * time.Second)
+	defaultBaseDelay   = 10 * time.Millisecond
+	defaultMaxDelay    = 1 * time.Second
 )
 
 // ErrAttemptsExceeded is returned when we exceeded the max attempts without succeeding

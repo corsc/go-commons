@@ -32,7 +32,7 @@ func TestOutputJSON(t *testing.T) {
 `
 
 	resp := httptest.NewRecorder()
-	OutputJSON(resp, dto)
+	_ = OutputJSON(resp, dto)
 
 	assert.Equal(t, expected, resp.Body.String())
 }

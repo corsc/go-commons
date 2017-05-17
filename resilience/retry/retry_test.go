@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestRetry_Do_happyPath(t *testing.T) {
+func TestClient_Do_happyPath(t *testing.T) {
 	callsChan := make(chan struct{}, defaultMaxAttempts)
 	happyLambda := func() error {
 		callsChan <- struct{}{}
@@ -39,7 +39,7 @@ func TestRetry_Do_happyPath(t *testing.T) {
 	assert.True(t, len(callsChan) == 1)
 }
 
-func TestRetry_Do_happyPathMetrics(t *testing.T) {
+func TestClient_Do_happyPathMetrics(t *testing.T) {
 	mockMetrics := &mockMetricsClient{}
 	mockMetrics.On("Incr", "foo", mock.Anything)
 
@@ -57,7 +57,7 @@ func TestRetry_Do_happyPathMetrics(t *testing.T) {
 	assert.True(t, mockMetrics.AssertExpectations(t))
 }
 
-func TestRetry_Do_error(t *testing.T) {
+func TestClient_Do_error(t *testing.T) {
 	callsChan := make(chan struct{}, defaultMaxAttempts)
 	sadLambda := func() error {
 		callsChan <- struct{}{}
@@ -72,7 +72,7 @@ func TestRetry_Do_error(t *testing.T) {
 	assert.Equal(t, defaultMaxAttempts, len(callsChan))
 }
 
-func TestRetry_Do_fatalError(t *testing.T) {
+func TestClient_Do_fatalError(t *testing.T) {
 	callsChan := make(chan struct{}, defaultMaxAttempts)
 	sadLambda := func() error {
 		callsChan <- struct{}{}
@@ -91,7 +91,7 @@ func TestRetry_Do_fatalError(t *testing.T) {
 	assert.Equal(t, 1, len(callsChan))
 }
 
-func TestRetry_Do_sleep(t *testing.T) {
+func TestClient_Do_sleep(t *testing.T) {
 	scenarios := []struct {
 		desc        string
 		attempt     int
@@ -136,7 +136,7 @@ func TestRetry_Do_sleep(t *testing.T) {
 	}
 }
 
-func TestRetry_Do_contextAlreadyDone(t *testing.T) {
+func TestClient_Do_contextAlreadyDone(t *testing.T) {
 	callsChan := make(chan struct{}, defaultMaxAttempts)
 	sadLambda := func() error {
 		callsChan <- struct{}{}
@@ -156,7 +156,7 @@ func TestRetry_Do_contextAlreadyDone(t *testing.T) {
 	assert.Equal(t, 0, len(callsChan))
 }
 
-func TestRetry_Do_contextTimeoutDuringAttempts(t *testing.T) {
+func TestClient_Do_contextTimeoutDuringAttempts(t *testing.T) {
 	callsChan := make(chan struct{}, defaultMaxAttempts)
 	sadLambda := func() error {
 		callsChan <- struct{}{}
@@ -171,7 +171,8 @@ func TestRetry_Do_contextTimeoutDuringAttempts(t *testing.T) {
 	}
 
 	// create closed context
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Millisecond)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Millisecond)
+	defer cancelFn()
 
 	// call should timeout before we run out of attempts
 	resultErr := retry.Do(ctx, "foo", sadLambda)
@@ -180,7 +181,7 @@ func TestRetry_Do_contextTimeoutDuringAttempts(t *testing.T) {
 	assert.True(t, len(callsChan) < 100)
 }
 
-func TestRetry_Do_contextTimeoutSlowLambda(t *testing.T) {
+func TestClient_Do_contextTimeoutSlowLambda(t *testing.T) {
 	callsChan := make(chan struct{}, defaultMaxAttempts)
 	sadLambda := func() error {
 		callsChan <- struct{}{}
@@ -192,7 +193,8 @@ func TestRetry_Do_contextTimeoutSlowLambda(t *testing.T) {
 	retry := &Client{}
 
 	// create closed context
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Millisecond)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Millisecond)
+	defer cancelFn()
 
 	// call should fail before the first attempt is complete
 	resultErr := retry.Do(ctx, "foo", sadLambda)

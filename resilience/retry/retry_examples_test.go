@@ -24,7 +24,7 @@ import (
 	"github.com/corsc/go-commons/resilience/retry"
 )
 
-func ExampleRetry_Do() {
+func ExampleClient_Do() {
 	// simplest usage; using the defaults
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
@@ -39,7 +39,7 @@ func ExampleRetry_Do() {
 	fmt.Printf("error was %v", err)
 }
 
-func ExampleRetry_Do_customErrorHandling() {
+func ExampleClient_Do_customErrorHandling() {
 	// some custom errors
 	var ErrUserError = errors.New("bad user input - retrying won't help")
 	var ErrNetworkError = errors.New("bad connection - retrying might help")

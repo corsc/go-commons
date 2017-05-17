@@ -33,7 +33,7 @@ func fooJSONHandler(resp http.ResponseWriter, _ *http.Request) {
 		Name: "my name",
 	}
 
-	middleware.OutputJSON(resp, outputDTO)
+	_ = middleware.OutputJSON(resp, outputDTO)
 }
 
 // request format for foo

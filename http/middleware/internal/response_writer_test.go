@@ -41,6 +41,6 @@ func TestCustomResponseWriter_Write(t *testing.T) {
 	writer := httptest.NewRecorder()
 	myWriter := NewCustomResponseWriter(writer)
 
-	myWriter.Write([]byte("foo"))
+	_, _ = myWriter.Write([]byte("foo"))
 	assert.Equal(t, http.StatusOK, myWriter.Status())
 }

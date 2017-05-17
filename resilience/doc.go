@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package http please refer to README.md
+// Package resilience please refer to README.md
 package resilience
 
 func init() {
