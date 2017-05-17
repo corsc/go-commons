@@ -12,10 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-// Package http please refer to README.md
-package http
-
-func init() {
-	// this code is included to avoid "no valid go files" or "invalid go package" errors
-}
+// Package middleware please refer to README.md
+package middleware

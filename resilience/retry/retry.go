@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package retry implements the Exponential Backoff & Decorrelated Jitter Algorithm described in
-// https://www.awsarchitectureblog.com/2015/03/backoff.html
 package retry
 
 import (
