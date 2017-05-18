@@ -26,7 +26,7 @@ func TestRedisStorage_happyPath(t *testing.T) {
 	// get a value (should fail)
 	result, resultErr := storage.Get(ctx, key)
 	assert.Nil(t, result)
-	assert.Equal(t, resultErr, errCacheMiss)
+	assert.Equal(t, errCacheMiss, resultErr)
 
 	// set a value
 	data := []byte(`this is foo`)
@@ -51,7 +51,7 @@ func TestRedisStorage_getWithCtxDone(t *testing.T) {
 
 	result, resultErr := storage.Get(ctx, key)
 	assert.Nil(t, result)
-	assert.Equal(t, resultErr, context.Canceled)
+	assert.Equal(t, context.Canceled, resultErr)
 }
 
 func TestRedisStorage_setWithCtxDone(t *testing.T) {
@@ -65,7 +65,7 @@ func TestRedisStorage_setWithCtxDone(t *testing.T) {
 	cancelFn()
 
 	resultErr := storage.Set(ctx, key, []byte("this is foo"))
-	assert.Equal(t, resultErr, context.Canceled)
+	assert.Equal(t, context.Canceled, resultErr)
 }
 
 func getTestRedisStorage() *RedisStorage {
@@ -73,7 +73,7 @@ func getTestRedisStorage() *RedisStorage {
 		Pool: &redis.Pool{
 			MaxIdle:     3,
 			IdleTimeout: 240 * time.Second,
-			Dial:        func() (redis.Conn, error) { return redis.Dial("tcp", "localhost:6379") },
+			Dial:        func() (redis.Conn, error) { return redis.Dial("tcp", ":6379") },
 		},
 		TTL: 60 * time.Second,
 	}

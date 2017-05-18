@@ -39,4 +39,13 @@ const (
 	// redis commands
 	redisGet   = "GET"
 	redisSetex = "SETEX"
+
+	// CbDynamoDbStorage is tag for DynamoDB storage circuit breaker.
+	// This should be used for in calls to `hystrix.ConfigureCommand()`
+	CbDynamoDbStorage = "CbDynamoDbStorage"
+
+	// dynamo constants
+	ddbKey  = "key"
+	ddbData = "data"
+	ddbTTL  = "ttl"
 )

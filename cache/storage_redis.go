@@ -47,12 +47,12 @@ func (r *RedisStorage) Get(ctx context.Context, key string) ([]byte, error) {
 
 // Set implements Storage
 func (r *RedisStorage) Set(ctx context.Context, key string, bytes []byte) error {
-	_, err := r.do(ctx, redisSetex, key, r.GetTTL(), bytes)
+	_, err := r.do(ctx, redisSetex, key, r.getTTL(), bytes)
 	return err
 }
 
-// GetTTL implements Storage
-func (r *RedisStorage) GetTTL() int64 {
+// return the number of seconds an item can live for
+func (r *RedisStorage) getTTL() int64 {
 	r.ttlOnce.Do(func() {
 		r.ttlInSeconds = int64(r.TTL / time.Second)
 	})

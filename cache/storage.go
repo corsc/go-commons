@@ -12,7 +12,4 @@ type Storage interface {
 
 	// Set will save a value into storage
 	Set(ctx context.Context, key string, bytes []byte) error
-
-	// GetTTL returns the TTL duration in seconds
-	GetTTL() int64
 }

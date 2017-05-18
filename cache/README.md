@@ -1,5 +1,23 @@
 # Cache
 
+Simple cache implementation with pluggable storage; optional logging and instrumentation.
+
+For usage examples please refer [here](cache_examples_test.go)
+
+## Redis storage
+* This library makes no effort to ensure it does not overwrite other data in the server.  Key names should be chosen carefully
+
+### Tests
+Use `go test -tags redis ./...`
+(These tests assume redis running on `:6379`)
+
+## DynamoDB storage
+* TTL should be enabled on the table with attribute name `ttl` see [reference](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/time-to-live-ttl-how-to.html)
+
+### Tests
+Use `go test -tags ddb ./...`
+(These tests use [DynamoDbLocal](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) 
+and assume server running on `https://s3-ap-southeast-1.amazonaws.com/dynamodb-local-singapore/release`)
 
 ## Notes:
 
@@ -11,7 +29,3 @@ That said, logging is optional.
 
 ### Metrics
 Metrics are provided but optional.
-
-### Running tests with different storage
-To run tests on `RedisStorage` use `go test -tags redis ./...`
-(These tests assume redis running on localhost:6379)
