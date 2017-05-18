@@ -47,11 +47,11 @@ gometalinter --config=gometa-config.json ./...
 
 * **Corey Scott** - [corsc](https://github.com/corsc)
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
 ## License
 
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details
 
 ## Acknowledgments
 
+* **Chao Gao** - [reterVision](https://github.com/reterVision) - Code Reviews and Advice
+* **Ryan Cumming** - [etaoins](https://github.com/etaoins) - Code Reviews and Advice
