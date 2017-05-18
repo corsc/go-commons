@@ -45,3 +45,10 @@ type myLogger struct{}
 func (l *myLogger) Warn(msg string, args ...interface{}) {
 	log.Printf(msg, args...)
 }
+
+// returns a HTTP handler that always panics
+func getPanicingHandler() http.HandlerFunc {
+	return func(_ http.ResponseWriter, _ *http.Request) {
+		panic("foo")
+	}
+}

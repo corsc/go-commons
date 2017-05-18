@@ -21,14 +21,14 @@ import (
 	"github.com/corsc/go-commons/http/middleware"
 )
 
-func ExampleVersion_singleEndpoint() {
-	http.Handle("/foo", middleware.Version(http.HandlerFunc(fooHandler), "X-Version", "1.2.3"))
+func ExamplePanic_singleEndpoint() {
+	http.Handle("/foo", middleware.Panic(http.HandlerFunc(panicHandler), log.Printf))
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func ExampleVersion_allEndpoints() {
-	http.Handle("/foo", http.HandlerFunc(fooHandler))
+func ExamplePanic_allEndpoints() {
+	http.Handle("/foo", http.HandlerFunc(panicHandler))
 
-	log.Fatal(http.ListenAndServe(":8080", middleware.Version(http.DefaultServeMux, "X-Version", "1.2.3")))
+	log.Fatal(http.ListenAndServe(":8080", middleware.Panic(http.DefaultServeMux, log.Printf)))
 }
