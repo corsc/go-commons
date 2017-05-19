@@ -34,7 +34,7 @@ go get github.com/corsc/go-commons/
         * [Version Header](http/middleware/version_examples_test.go)
 * [**I/O Closer**](iocloser/) - a convenience function for closing and optionally logging io.Closers in 1 line (useful for defer calls)
 * [**Resilience**](resilience/) - Packages related to resilience
-    * [**Retry**](retry/) - Retry with Exponential Backoff & Decorrelated Jitter Algorithm described [here](https://www.awsarchitectureblog.com/2015/03/backoff.html)
+    * [**Retry**](resilience/retry/) - Retry with Exponential Backoff & Decorrelated Jitter Algorithm described [here](https://www.awsarchitectureblog.com/2015/03/backoff.html)
 
 ### Prerequisites
 
