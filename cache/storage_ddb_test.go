@@ -57,6 +57,34 @@ func TestDynamoDbStorage_happyPath(t *testing.T) {
 	assert.Nil(t, resultErr)
 }
 
+func TestDynamoDbStorage_Invalidate(t *testing.T) {
+	// inputs
+	ctx, cancelFn := context.WithCancel(context.Background())
+	defer cancelFn()
+	key := getTestKey()
+
+	storage := getTestDynamoDbStorage()
+
+	// set a value
+	data := []byte(`this is foo`)
+	resultErr := storage.Set(ctx, key, data)
+	assert.Nil(t, resultErr)
+
+	// get a value
+	result, resultErr := storage.Get(ctx, key)
+	assert.Equal(t, data, result)
+	assert.Nil(t, resultErr)
+
+	// invalidate that value
+	resultErr = storage.Invalidate(ctx, key)
+	assert.Nil(t, resultErr)
+
+	// get a value (should fail)
+	result, resultErr = storage.Get(ctx, key)
+	assert.Nil(t, result)
+	assert.Equal(t, errCacheMiss, resultErr)
+}
+
 func TestDynamoDbStorage_getWithCtxDone(t *testing.T) {
 	// inputs
 	ctx, cancelFn := context.WithCancel(context.Background())

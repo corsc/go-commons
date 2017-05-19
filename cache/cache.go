@@ -111,6 +111,17 @@ func (c *Client) updateCache(key string, val encoding.BinaryMarshaler) {
 	}
 }
 
+// Invalidate will force invalidate any matching key in the cache
+func (c *Client) Invalidate(ctx context.Context, key string) error {
+	err := c.Storage.Invalidate(ctx, key)
+	if err != nil {
+		c.getMetrics().Track(CacheError)
+		return err
+	}
+
+	return nil
+}
+
 // return the supplied logger or a no-op implementation
 func (c *Client) getLogger() Logger {
 	if c.Logger != nil {

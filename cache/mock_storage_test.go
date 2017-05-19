@@ -1,17 +1,3 @@
-// Copyright 2017 Corey Scott http://www.sage42.org/
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package cache
 
 import (
@@ -48,15 +34,15 @@ func (_m *MockStorage) Get(ctx context.Context, key string) ([]byte, error) {
 	return r0, r1
 }
 
-// GetTTL provides a mock function with given fields:
-func (_m *MockStorage) GetTTL() int64 {
-	ret := _m.Called()
+// Invalidate provides a mock function with given fields: ctx, key
+func (_m *MockStorage) Invalidate(ctx context.Context, key string) error {
+	ret := _m.Called(ctx, key)
 
-	var r0 int64
-	if rf, ok := ret.Get(0).(func() int64); ok {
-		r0 = rf()
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, key)
 	} else {
-		r0 = ret.Get(0).(int64)
+		r0 = ret.Error(0)
 	}
 
 	return r0
