@@ -32,3 +32,5 @@ This package allows you to get it back to one line:
 Or just
 
     defer iocloser.Close(reader)
+
+For usage examples please refer [here](iocloser_examples_test.go)

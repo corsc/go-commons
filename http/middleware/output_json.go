@@ -34,5 +34,7 @@ func OutputJSON(resp http.ResponseWriter, dto interface{}) error {
 	}
 
 	resp.WriteHeader(http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json; charset=utf-8")
+
 	return nil
 }
