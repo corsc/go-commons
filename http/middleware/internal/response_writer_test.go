@@ -24,13 +24,13 @@ import (
 
 func TestNewCustomResponseWriter(t *testing.T) {
 	writer := httptest.NewRecorder()
-	myWriter := NewCustomResponseWriter(writer)
+	myWriter := NewCustomResponseWriter(writer, false)
 	assert.Implements(t, (*http.ResponseWriter)(nil), myWriter)
 }
 
 func TestCustomResponseWriter_WriteHeader(t *testing.T) {
 	writer := httptest.NewRecorder()
-	myWriter := NewCustomResponseWriter(writer)
+	myWriter := NewCustomResponseWriter(writer, false)
 
 	myWriter.WriteHeader(http.StatusBadRequest)
 	assert.Equal(t, http.StatusBadRequest, myWriter.Status())
@@ -39,8 +39,9 @@ func TestCustomResponseWriter_WriteHeader(t *testing.T) {
 
 func TestCustomResponseWriter_Write(t *testing.T) {
 	writer := httptest.NewRecorder()
-	myWriter := NewCustomResponseWriter(writer)
+	myWriter := NewCustomResponseWriter(writer, true)
 
 	_, _ = myWriter.Write([]byte("foo"))
 	assert.Equal(t, http.StatusOK, myWriter.Status())
+	assert.Equal(t, []byte("foo"), myWriter.Body())
 }

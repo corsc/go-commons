@@ -45,7 +45,8 @@ func DurationStatus(handler http.Handler, metrics MetricsClient, extraTags ...st
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		start := time.Now()
 
-		crw := internal.NewCustomResponseWriter(resp)
+		// create a new response writer to catch the response code
+		crw := internal.NewCustomResponseWriter(resp, false)
 
 		handler.ServeHTTP(crw, req)
 

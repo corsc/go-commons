@@ -19,7 +19,7 @@ import (
 )
 
 // Storage is an abstract definition of the underlying cache storage
-//go:generate mockery -name Storage -inpkg -testonly -case underscore
+//go:generate mockery -name Storage -inpkg -case underscore
 type Storage interface {
 	// Get will attempt to get a value from storage
 	Get(ctx context.Context, key string) ([]byte, error)

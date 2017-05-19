@@ -54,7 +54,7 @@ func (r *RedisStorage) Get(ctx context.Context, key string) ([]byte, error) {
 
 	bytes, err := redis.Bytes(resp, err)
 	if err == redis.ErrNil {
-		return nil, errCacheMiss
+		return nil, ErrCacheMiss
 	}
 	return bytes, err
 }

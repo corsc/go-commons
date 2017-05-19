@@ -51,7 +51,7 @@ type Client struct {
 func (c *Client) Get(ctx context.Context, key string, dest BinaryEncoder, builder Builder) error {
 	bytes, err := c.Storage.Get(ctx, key)
 	if err != nil {
-		if err == errCacheMiss {
+		if err == ErrCacheMiss {
 			return c.onCacheMiss(ctx, key, dest, builder)
 		}
 

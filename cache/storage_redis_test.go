@@ -40,7 +40,7 @@ func TestRedisStorage_happyPath(t *testing.T) {
 	// get a value (should fail)
 	result, resultErr := storage.Get(ctx, key)
 	assert.Nil(t, result)
-	assert.Equal(t, errCacheMiss, resultErr)
+	assert.Equal(t, ErrCacheMiss, resultErr)
 
 	// set a value
 	data := []byte(`this is foo`)
@@ -78,7 +78,7 @@ func TestRedisStorage_Invalidate(t *testing.T) {
 	// get a value (should fail)
 	result, resultErr = storage.Get(ctx, key)
 	assert.Nil(t, result)
-	assert.Equal(t, errCacheMiss, resultErr)
+	assert.Equal(t, ErrCacheMiss, resultErr)
 }
 
 func TestRedisStorage_getWithCtxDone(t *testing.T) {

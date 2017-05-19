@@ -18,8 +18,8 @@ import (
 	"errors"
 )
 
-// errCacheMiss is returned when the cache does not contain the requested key
-var errCacheMiss = errors.New("cache miss")
+// ErrCacheMiss is returned when the cache does not contain the requested key
+var ErrCacheMiss = errors.New("cache miss")
 
 // Event denote the cache event type
 type Event int
