@@ -25,12 +25,13 @@ go get github.com/corsc/go-commons/
         * [JSON Request processing](http/middleware/input_body_examples_test.go)
         * [Output JSON](http/middleware/output_json.go)
         * [Panic catch and log](http/middleware/panic_examples_test.go)
+        * [Response Cache](http/middleware/response_cache_examples_test.go)
         * Security Related Headers:
             * [Content-Security-Policy](http/middleware/csp_examples_test.go)
             * [HTTP Strict Transport Security](http/middleware/hsts_examples_test.go)
             * [X-Content-Type-Options](http/middleware/content_no_sniff_examples_test.go)
             * [X-XSS-Protection](http/middleware/xxss_examples_test.go)
-        * Version Header
+        * [Version Header](http/middleware/version_examples_test.go)
 * [**I/O Closer** - a convenience function for closing and optionally logging io.Closers in 1 line (useful for defer calls)
 * [**Resilience** - Packages related to resilience
     * [**Retry** - Retry with Exponential Backoff & Decorrelated Jitter Algorithm described in [here](https://www.awsarchitectureblog.com/2015/03/backoff.html)
