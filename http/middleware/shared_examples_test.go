@@ -25,6 +25,11 @@ func fooHandler(resp http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(resp, "hello foo")
 }
 
+// a handler that always panics
+func panicHandler(_ http.ResponseWriter, _ *http.Request) {
+	panic("foo")
+}
+
 // simple implementation of the MetricsClient interface
 type myMetricsClient struct{}
 

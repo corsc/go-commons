@@ -12,23 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package middleware_test
+package middleware
 
 import (
-	"log"
+	"fmt"
 	"net/http"
+	"net/http/httptest"
+	"testing"
 
-	"github.com/corsc/go-commons/http/middleware"
+	"github.com/stretchr/testify/assert"
 )
 
-func ExampleVersion_singleEndpoint() {
-	http.Handle("/foo", middleware.Version(http.HandlerFunc(fooHandler), "X-Version", "1.2.3"))
+func TestPanic(t *testing.T) {
+	handler := getPanicingHandler()
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
-}
+	loggedMessage := ""
+	logFn := func(format string, args ...interface{}) {
+		loggedMessage += fmt.Sprintf(format, args...)
+	}
 
-func ExampleVersion_allEndpoints() {
-	http.Handle("/foo", http.HandlerFunc(fooHandler))
+	handlerFunc := Panic(handler, logFn)
+	assert.IsType(t, (http.HandlerFunc)(nil), handlerFunc)
 
-	log.Fatal(http.ListenAndServe(":8080", middleware.Version(http.DefaultServeMux, "X-Version", "1.2.3")))
+	resp := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/who-cares", nil)
+	handlerFunc(resp, req)
+
+	assert.Equal(t, http.StatusInternalServerError, resp.Code)
+	assert.NotEqual(t, "", loggedMessage)
 }
