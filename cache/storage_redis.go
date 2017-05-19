@@ -74,6 +74,12 @@ func (r *RedisStorage) getTTL() int64 {
 	return r.ttlInSeconds
 }
 
+// Invalidate implements Storage
+func (r *RedisStorage) Invalidate(ctx context.Context, key string) error {
+	_, err := r.do(ctx, redisExpire, key, 0)
+	return err
+}
+
 // calls to redis protected by a circuit breaker
 func (r *RedisStorage) do(ctx context.Context, command string, args ...interface{}) (interface{}, error) {
 	resultCh := make(chan interface{}, 1)

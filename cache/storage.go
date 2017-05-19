@@ -26,4 +26,7 @@ type Storage interface {
 
 	// Set will save a value into storage
 	Set(ctx context.Context, key string, bytes []byte) error
+
+	// Invalidate will force invalidate/remove a key from storage
+	Invalidate(ctx context.Context, key string) error
 }

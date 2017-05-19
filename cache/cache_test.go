@@ -96,6 +96,28 @@ func TestClient_cacheMiss(t *testing.T) {
 	assert.True(t, metrics.AssertExpectations(t))
 }
 
+func TestClient_Invalidate(t *testing.T) {
+	// inputs
+	ctx, cancelFn := context.WithCancel(context.Background())
+	defer cancelFn()
+	key := getTestKey()
+
+	// build a client and mock storage
+	storage := &MockStorage{}
+	storage.On("Invalidate", mock.Anything, key).Return(nil)
+
+	client := &Client{
+		Storage: storage,
+	}
+
+	// make the call
+	resultErr := client.Invalidate(ctx, key)
+
+	assert.Nil(t, resultErr)
+
+	assert.True(t, storage.AssertExpectations(t))
+}
+
 func TestClient_cacheLambdaError(t *testing.T) {
 	// inputs
 	ctx, cancelFn := context.WithCancel(context.Background())
