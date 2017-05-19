@@ -23,7 +23,7 @@ go get github.com/corsc/go-commons/
     * [**Middleware**](http/middleware) - Middleware to decorate your HTTP handlers with additional features/functionality. Including
         * [Instrumentation](http/middleware/metrics_examples_test.go)
         * [JSON Request processing](http/middleware/input_body_examples_test.go)
-        * [Output JSON](http/middleware/output_json.go)
+        * [Output JSON](http/middleware/output_json_examples_test.go)
         * [Panic catch and log](http/middleware/panic_examples_test.go)
         * [Response Cache](http/middleware/response_cache_examples_test.go)
         * Security Related Headers:
@@ -32,9 +32,9 @@ go get github.com/corsc/go-commons/
             * [X-Content-Type-Options](http/middleware/content_no_sniff_examples_test.go)
             * [X-XSS-Protection](http/middleware/xxss_examples_test.go)
         * [Version Header](http/middleware/version_examples_test.go)
-* [**I/O Closer** - a convenience function for closing and optionally logging io.Closers in 1 line (useful for defer calls)
-* [**Resilience** - Packages related to resilience
-    * [**Retry** - Retry with Exponential Backoff & Decorrelated Jitter Algorithm described in [here](https://www.awsarchitectureblog.com/2015/03/backoff.html)
+* [**I/O Closer**](iocloser/) - a convenience function for closing and optionally logging io.Closers in 1 line (useful for defer calls)
+* [**Resilience**](resilience/) - Packages related to resilience
+    * [**Retry**](retry/) - Retry with Exponential Backoff & Decorrelated Jitter Algorithm described [here](https://www.awsarchitectureblog.com/2015/03/backoff.html)
 
 ### Prerequisites
 
