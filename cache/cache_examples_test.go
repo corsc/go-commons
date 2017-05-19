@@ -18,15 +18,25 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/corsc/go-commons/cache"
+	"github.com/garyburd/redigo/redis"
 )
 
 func ExampleClient_normalUsage() {
 	// init - called once; perhaps a global variable or member variable
 	cacheClient := &cache.Client{
-		Storage: &cache.RedisStorage{},
+		Storage: &cache.RedisStorage{
+			Pool: &redis.Pool{
+				MaxIdle:     3,
+				IdleTimeout: 240 * time.Second,
+				Dial:        func() (redis.Conn, error) { return redis.Dial("tcp", ":6379") },
+			},
+			TTL: 60 * time.Second,
+		},
 	}
 
 	// general usage
@@ -38,18 +48,25 @@ func ExampleClient_normalUsage() {
 
 	err := cacheClient.Get(ctx, cacheKey, dest, cache.BuilderFunc(func(ctx context.Context, key string, dest cache.BinaryEncoder) error {
 		// logic that builds/marshals the cacheable value
-		return errors.New("not implemented")
+		return nil
 	}))
 
-	if err != nil {
-		panic(err.Error())
-	}
+	// Output:
+	// Err: <nil>
+	fmt.Printf("Err: %v", err)
 }
 
 func ExampleClient_httpHandler() {
 	// init - called once; perhaps a global variable or member variable
 	userCache := &cache.Client{
-		Storage: &cache.RedisStorage{},
+		Storage: &cache.RedisStorage{
+			Pool: &redis.Pool{
+				MaxIdle:     3,
+				IdleTimeout: 240 * time.Second,
+				Dial:        func() (redis.Conn, error) { return redis.Dial("tcp", ":6379") },
+			},
+			TTL: 60 * time.Second,
+		},
 	}
 
 	// the HTTP Handler
