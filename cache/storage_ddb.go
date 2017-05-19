@@ -67,7 +67,7 @@ func (r *DynamoDbStorage) Get(ctx context.Context, key string) ([]byte, error) {
 		}
 
 		if len(resp.Item) == 0 {
-			return errCacheMiss
+			return ErrCacheMiss
 		}
 
 		resultCh <- resp.Item[ddbData].B

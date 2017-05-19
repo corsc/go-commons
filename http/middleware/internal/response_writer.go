@@ -15,13 +15,15 @@
 package internal
 
 import (
+	"bytes"
 	"net/http"
 )
 
 // NewCustomResponseWriter returns a CustomResponseWriter from the supplied http.ResponseWriter
-func NewCustomResponseWriter(resp http.ResponseWriter) *CustomResponseWriter {
+func NewCustomResponseWriter(resp http.ResponseWriter, catchBody bool) *CustomResponseWriter {
 	return &CustomResponseWriter{
 		ResponseWriter: resp,
+		catchBody:      catchBody,
 	}
 }
 
@@ -31,11 +33,9 @@ type CustomResponseWriter struct {
 	http.ResponseWriter
 	status      int
 	wroteHeader bool
-}
 
-// Status returns the HTTP status code (or 0 if not set)
-func (resp *CustomResponseWriter) Status() int {
-	return resp.status
+	catchBody bool
+	body      bytes.Buffer
 }
 
 // Write implements http.ResponseWriter
@@ -43,6 +43,14 @@ func (resp *CustomResponseWriter) Write(in []byte) (int, error) {
 	if !resp.wroteHeader {
 		resp.WriteHeader(http.StatusOK)
 	}
+
+	if resp.catchBody {
+		_, err := resp.body.Write(in)
+		if err != nil {
+			return 0, err
+		}
+	}
+
 	return resp.ResponseWriter.Write(in)
 }
 
@@ -57,4 +65,14 @@ func (resp *CustomResponseWriter) WriteHeader(code int) {
 
 	resp.status = code
 	resp.wroteHeader = true
+}
+
+// Status returns the HTTP status code (or 0 if not set)
+func (resp *CustomResponseWriter) Status() int {
+	return resp.status
+}
+
+// Body returns the HTTP body (if `catchBody == true` in the constructor)
+func (resp *CustomResponseWriter) Body() []byte {
+	return resp.body.Bytes()
 }

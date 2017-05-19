@@ -67,7 +67,7 @@ func TestClient_cacheMiss(t *testing.T) {
 
 	// build a client and mock storage
 	storage := &MockStorage{}
-	storage.On("Get", mock.Anything, key).Return(nil, errCacheMiss)
+	storage.On("Get", mock.Anything, key).Return(nil, ErrCacheMiss)
 	storage.On("Set", mock.Anything, key, mock.Anything).Return(nil, nil)
 
 	metrics := &MockMetrics{}
@@ -127,7 +127,7 @@ func TestClient_cacheLambdaError(t *testing.T) {
 
 	// build a client and mock storage
 	storage := &MockStorage{}
-	storage.On("Get", mock.Anything, key).Return(nil, errCacheMiss)
+	storage.On("Get", mock.Anything, key).Return(nil, ErrCacheMiss)
 
 	metrics := &MockMetrics{}
 	metrics.On("Track", CacheMiss)
