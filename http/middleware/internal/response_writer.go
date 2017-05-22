@@ -52,12 +52,12 @@ func (resp *CustomResponseWriter) Write(in []byte) (int, error) {
 
 // WriteHeader implements http.ResponseWriter
 func (resp *CustomResponseWriter) WriteHeader(code int) {
-	resp.ResponseWriter.WriteHeader(code)
-
 	// check after in case there's error handling in the wrapped http.ResponseWriter
 	if resp.wroteHeader {
 		return
 	}
+
+	resp.ResponseWriter.WriteHeader(code)
 
 	resp.status = code
 	resp.wroteHeader = true
