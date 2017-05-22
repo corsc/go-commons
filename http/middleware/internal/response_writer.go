@@ -40,10 +40,6 @@ type CustomResponseWriter struct {
 
 // Write implements http.ResponseWriter
 func (resp *CustomResponseWriter) Write(in []byte) (int, error) {
-	if !resp.wroteHeader {
-		resp.WriteHeader(http.StatusOK)
-	}
-
 	if resp.catchBody {
 		_, err := resp.body.Write(in)
 		if err != nil {
