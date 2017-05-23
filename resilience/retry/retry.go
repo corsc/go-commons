@@ -59,14 +59,15 @@ type Client struct {
 func (r *Client) Do(ctx context.Context, metricKey string, do func() error) error {
 	for attempt := 0; attempt < r.getMaxAttempts(); attempt++ {
 		if ctx.Err() != nil {
-			r.getMetrics().Incr(metricKey, "type:error", "cause:context")
-			return ctx.Err()
+			return r.returnContextError(ctx, metricKey)
 		}
 
 		// wrap lamba so we can "quit early" with using context
 		doChan := make(chan error, 1)
 		go func() {
 			defer close(doChan)
+
+			r.getMetrics().Incr(metricKey, "type:attempt")
 
 			err := do()
 			if err != nil {
@@ -87,8 +88,7 @@ func (r *Client) Do(ctx context.Context, metricKey string, do func() error) erro
 			}
 
 		case <-ctx.Done():
-			r.getMetrics().Incr(metricKey, "type:error", "cause:context")
-			return ctx.Err()
+			return r.returnContextError(ctx, metricKey)
 		}
 
 		// sleep before trying again
@@ -157,6 +157,11 @@ func (r *Client) getMetrics() MetricsClient {
 		return r.Metrics
 	}
 	return &noopMetrics{}
+}
+
+func (r *Client) returnContextError(ctx context.Context, metricKey string) error {
+	r.getMetrics().Incr(metricKey, "type:error", "cause:context")
+	return ctx.Err()
 }
 
 type noopMetrics struct{}
