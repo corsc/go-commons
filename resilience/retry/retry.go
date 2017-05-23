@@ -67,8 +67,6 @@ func (r *Client) Do(ctx context.Context, metricKey string, do func() error) erro
 		go func() {
 			defer close(doChan)
 
-			r.getMetrics().Incr(metricKey, "type:attempt")
-
 			err := do()
 			if err != nil {
 				doChan <- err
@@ -86,6 +84,8 @@ func (r *Client) Do(ctx context.Context, metricKey string, do func() error) erro
 				r.getMetrics().Incr(metricKey, "type:error", "cause:fatal")
 				return err
 			}
+
+			r.getMetrics().Incr(metricKey, "type:error", "cause:lambda")
 
 		case <-ctx.Done():
 			return r.returnContextError(ctx, metricKey)
