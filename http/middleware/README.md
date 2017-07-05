@@ -13,6 +13,7 @@ For usage examples please refer to:
 * [Panic catch and log](panic_examples_test.go)
 * [Response Cache](response_cache_examples_test.go)
 * Security Related Headers:
+    * [CSRF](csrf_examples_test.go)
     * [Content-Security-Policy](csp_examples_test.go)
     * [HTTP Strict Transport Security](hsts_examples_test.go)
     * [X-Content-Type-Options](content_no_sniff_examples_test.go)
