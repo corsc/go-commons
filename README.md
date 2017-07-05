@@ -27,6 +27,7 @@ go get github.com/corsc/go-commons/
         * [Panic catch and log](http/middleware/panic_examples_test.go)
         * [Response Cache](http/middleware/response_cache_examples_test.go)
         * Security Related Headers:
+            * [CSRF](csrf_examples_test.go)
             * [Content-Security-Policy](http/middleware/csp_examples_test.go)
             * [HTTP Strict Transport Security](http/middleware/hsts_examples_test.go)
             * [X-Content-Type-Options](http/middleware/content_no_sniff_examples_test.go)
