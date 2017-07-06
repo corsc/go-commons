@@ -20,7 +20,7 @@ import (
 	"net/http"
 
 	"github.com/corsc/go-commons/cache"
-	"github.com/corsc/go-commons/http/middleware/internal"
+	"github.com/corsc/go-commons/http/middleware/httputil"
 )
 
 var errCacheHandlerFailed = errors.New("response code from handler was not HTTP200 skipping cache")
@@ -35,7 +35,7 @@ func Cache(handler http.Handler, cacheClient *cache.Client, generator func(*http
 
 		err := cacheClient.Get(req.Context(), key, item, cache.BuilderFunc(func(ctx context.Context, key string, dest cache.BinaryEncoder) error {
 			// create a new response writer to catch the response body
-			crw := internal.NewCustomResponseWriter(resp, true)
+			crw := httputil.NewCustomResponseWriter(resp, true)
 
 			handler.ServeHTTP(crw, req)
 

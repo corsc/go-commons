@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/corsc/go-commons/http/middleware/internal"
+	"github.com/corsc/go-commons/http/middleware/httputil"
 )
 
 // MetricsClient allows for tracking the endpoint via StatsD or similar
@@ -46,7 +46,7 @@ func DurationStatus(handler http.Handler, metrics MetricsClient, extraTags ...st
 		start := time.Now()
 
 		// create a new response writer to catch the response code
-		crw := internal.NewCustomResponseWriter(resp, false)
+		crw := httputil.NewCustomResponseWriter(resp, false)
 
 		handler.ServeHTTP(crw, req)
 
