@@ -27,13 +27,13 @@ func OutputJSON(resp http.ResponseWriter, dto interface{}) error {
 		return errors.New("supplied DTO was empty")
 	}
 
+	resp.Header().Set("Content-Type", "application/json; charset=utf-8")
+
 	encoder := json.NewEncoder(resp)
 	err := encoder.Encode(dto)
 	if err != nil {
 		return err
 	}
-
-	resp.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	return nil
 }
