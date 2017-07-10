@@ -1,6 +1,6 @@
 // Copyright 2017 Corey Scott http://www.sage42.org/
 //
-// Licensed under the Apache License, ContentNoSniff 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -12,23 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package middleware_test
+package middleware
 
-import (
-	"log"
-	"net/http"
-
-	"github.com/corsc/go-commons/http/middleware"
-)
-
-func ExampleCSRF_singleEndpoint() {
-	http.Handle("/foo", middleware.CSRF("x-my-site", http.HandlerFunc(fooHandler), nil))
-
-	log.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-func ExampleCSRF_allEndpoints() {
-	http.Handle("/foo", http.HandlerFunc(fooHandler))
-
-	log.Fatal(http.ListenAndServe(":8080", middleware.CSRF("x-my-site", http.DefaultServeMux, nil, "/health")))
+// LoggingClient allows for logging
+type LoggingClient interface {
+	BadRequest(msg string, args ...interface{})
 }

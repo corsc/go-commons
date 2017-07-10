@@ -56,7 +56,7 @@ func TestCSRF(t *testing.T) {
 		t.Run(scenario.desc, func(t *testing.T) {
 			handler := getTestHandler()
 
-			handlerFunc := CSRF(headerKey, handler, scenario.ignoredPaths...)
+			handlerFunc := CSRF(headerKey, handler, nil, scenario.ignoredPaths...)
 			assert.IsType(t, (http.HandlerFunc)(nil), handlerFunc)
 
 			resp := httptest.NewRecorder()

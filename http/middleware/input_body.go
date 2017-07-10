@@ -26,11 +26,6 @@ type inputBodyKey int
 
 var inputBodyDTO inputBodyKey
 
-// LoggingClient allows for logging
-type LoggingClient interface {
-	Warn(msg string, args ...interface{})
-}
-
 // InputBody will attempt to populate a copy of the supplied struct and store it in request context.
 func InputBody(handler http.Handler, dto interface{}, client ...LoggingClient) http.HandlerFunc {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
@@ -70,5 +65,5 @@ func logWarn(client []LoggingClient, msg string, args ...interface{}) {
 		return
 	}
 
-	client[0].Warn(msg, args...)
+	client[0].BadRequest(msg, args...)
 }

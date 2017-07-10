@@ -41,8 +41,8 @@ func (h *testHandler) wasCalled() bool {
 // simple implementation of the LoggingClient interface
 type myLogger struct{}
 
-// Warn implements LoggingClient
-func (l *myLogger) Warn(msg string, args ...interface{}) {
+// BadRequest implements LoggingClient
+func (l *myLogger) BadRequest(msg string, args ...interface{}) {
 	log.Printf(msg, args...)
 }
 
