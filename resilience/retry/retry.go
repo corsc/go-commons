@@ -51,6 +51,10 @@ type Client struct {
 	// Useful for cases were retrying would never work. (default: retry always)
 	CanRetry func(error) bool
 
+	// IsIgnored allows for selectively ignoring some errors (from tracking) but still returning the error.
+	// Useful for things like ignoring a HTTP404 when that is not an error
+	IsIgnored func(error) bool
+
 	// MetricsClient allows this package to emit metrics (default: no metrics)
 	Metrics MetricsClient
 }
@@ -80,6 +84,12 @@ func (r *Client) Do(ctx context.Context, metricKey string, do func() error) erro
 				r.getMetrics().Incr(metricKey, "type:success")
 				return nil
 			}
+
+			if r.isIgnored(err) {
+				r.getMetrics().Incr(metricKey, "type:ignored")
+				return err
+			}
+
 			if !r.canRetry(err) {
 				r.getMetrics().Incr(metricKey, "type:error", "cause:fatal")
 				return err
@@ -150,6 +160,14 @@ func (r *Client) canRetry(err error) bool {
 	}
 
 	return true
+}
+
+func (r *Client) isIgnored(err error) bool {
+	if r.IsIgnored != nil {
+		return r.IsIgnored(err)
+	}
+
+	return false
 }
 
 func (r *Client) getMetrics() MetricsClient {

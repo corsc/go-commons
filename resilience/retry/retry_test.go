@@ -91,6 +91,32 @@ func TestClient_Do_fatalError(t *testing.T) {
 	assert.Equal(t, 1, len(callsChan))
 }
 
+func TestClient_Do_ignoringErrors(t *testing.T) {
+	metricKey := "foo"
+	knownErr := errors.New("something broke")
+
+	callsChan := make(chan struct{}, defaultMaxAttempts)
+	sadLambda := func() error {
+		callsChan <- struct{}{}
+		return knownErr
+	}
+
+	mockMetrics := &mockMetricsClient{}
+	mockMetrics.On("Incr", metricKey, []string{"type:ignored"}).Once()
+
+	// create a retry client with defaults and custom fatal error detection
+	retry := &Client{
+		Metrics: mockMetrics,
+		IsIgnored: func(err error) bool {
+			return err == knownErr
+		},
+	}
+
+	resultErr := retry.Do(context.Background(), metricKey, sadLambda)
+	assert.NotNil(t, resultErr)
+	assert.Equal(t, 1, len(callsChan))
+}
+
 func TestClient_Do_sleep(t *testing.T) {
 	scenarios := []struct {
 		desc        string
