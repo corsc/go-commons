@@ -19,6 +19,7 @@ import (
 	"errors"
 	"math"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -34,6 +35,7 @@ var ErrAttemptsExceeded = errors.New("exceeded max attempts")
 // MetricsClient defines the metrics interface used by this package
 type MetricsClient interface {
 	Incr(key string, tags ...string)
+	Duration(key string, start time.Time, tags ...string)
 }
 
 // Client implements the Exponential Backoff
@@ -70,6 +72,7 @@ func (r *Client) Do(ctx context.Context, metricKey string, do func() error) erro
 		doChan := make(chan error, 1)
 		go func() {
 			defer close(doChan)
+			defer r.trackDoDuration(metricKey, time.Now(), attempt)
 
 			err := do()
 			if err != nil {
@@ -81,21 +84,14 @@ func (r *Client) Do(ctx context.Context, metricKey string, do func() error) erro
 		select {
 		case err := <-doChan:
 			if err == nil {
-				r.getMetrics().Incr(metricKey, "type:success")
+				r.getMetrics().Incr(metricKey, "type:success", r.buildAttemptTag(attempt))
 				return nil
 			}
 
-			if r.isIgnored(err) {
-				r.getMetrics().Incr(metricKey, "type:ignored")
+			isFatal := r.handleError(metricKey, attempt, err)
+			if isFatal {
 				return err
 			}
-
-			if !r.canRetry(err) {
-				r.getMetrics().Incr(metricKey, "type:error", "cause:fatal")
-				return err
-			}
-
-			r.getMetrics().Incr(metricKey, "type:error", "cause:lambda")
 
 		case <-ctx.Done():
 			return r.returnContextError(ctx, metricKey)
@@ -108,14 +104,33 @@ func (r *Client) Do(ctx context.Context, metricKey string, do func() error) erro
 			// nothing
 
 		case <-ctx.Done():
-			r.getMetrics().Incr(metricKey, "type:error", "cause:context")
+			r.getMetrics().Incr(metricKey, "type:error", "cause:context", r.buildAttemptTag(attempt))
 			return ctx.Err()
 		}
 	}
 
 	// give up
-	r.getMetrics().Incr(metricKey, "type:error", "cause:attempts")
+	r.getMetrics().Incr(metricKey, "type:error", "cause:attempts", r.buildAttemptTag(r.getMaxAttempts()))
 	return ErrAttemptsExceeded
+}
+
+func (r *Client) handleError(metricKey string, attempt int, err error) bool {
+	if r.isIgnored(err) {
+		r.getMetrics().Incr(metricKey, "type:ignored", r.buildAttemptTag(attempt))
+		return true
+	}
+
+	if !r.canRetry(err) {
+		r.getMetrics().Incr(metricKey, "type:error", "cause:fatal", r.buildAttemptTag(attempt))
+		return true
+	}
+
+	r.getMetrics().Incr(metricKey, "type:error", "cause:lambda", r.buildAttemptTag(attempt))
+	return false
+}
+
+func (r *Client) trackDoDuration(metricKey string, start time.Time, attempt int) {
+	r.getMetrics().Duration(metricKey+".do", start, r.buildAttemptTag(attempt))
 }
 
 func (r *Client) getSleep(attempt int) time.Duration {
@@ -177,6 +192,10 @@ func (r *Client) getMetrics() MetricsClient {
 	return &noopMetrics{}
 }
 
+func (r *Client) buildAttemptTag(attempt int) string {
+	return "attempt:" + strconv.Itoa(attempt)
+}
+
 func (r *Client) returnContextError(ctx context.Context, metricKey string) error {
 	r.getMetrics().Incr(metricKey, "type:error", "cause:context")
 	return ctx.Err()
@@ -185,5 +204,9 @@ func (r *Client) returnContextError(ctx context.Context, metricKey string) error
 type noopMetrics struct{}
 
 func (n *noopMetrics) Incr(key string, tags ...string) {
+	// intentionally does nothing
+}
+
+func (n *noopMetrics) Duration(key string, start time.Time, tags ...string) {
 	// intentionally does nothing
 }
