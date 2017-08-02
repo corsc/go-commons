@@ -41,7 +41,8 @@ func TestClient_Do_happyPath(t *testing.T) {
 
 func TestClient_Do_happyPathMetrics(t *testing.T) {
 	mockMetrics := &mockMetricsClient{}
-	mockMetrics.On("Incr", "foo", mock.Anything)
+	mockMetrics.On("Incr", "foo", mock.Anything).Once()
+	mockMetrics.On("Duration", "foo.do", mock.Anything, mock.Anything).Once()
 
 	happyLambda := func() error {
 		return nil
@@ -102,7 +103,8 @@ func TestClient_Do_ignoringErrors(t *testing.T) {
 	}
 
 	mockMetrics := &mockMetricsClient{}
-	mockMetrics.On("Incr", metricKey, []string{"type:ignored"}).Once()
+	mockMetrics.On("Incr", metricKey, []string{"type:ignored", "attempt:0"}).Once()
+	mockMetrics.On("Duration", metricKey+".do", mock.Anything, mock.Anything).Once()
 
 	// create a retry client with defaults and custom fatal error detection
 	retry := &Client{
@@ -235,4 +237,9 @@ type mockMetricsClient struct {
 // Incr implements MetricsClient
 func (m *mockMetricsClient) Incr(key string, tags ...string) {
 	m.Called(key, tags)
+}
+
+// Duration implements MetricsClient
+func (m *mockMetricsClient) Duration(key string, start time.Time, tags ...string) {
+	m.Called(key, start, tags)
 }
