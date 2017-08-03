@@ -52,19 +52,21 @@ func (c *Client) Get(ctx context.Context, key string, dest BinaryEncoder, builde
 	bytes, err := c.Storage.Get(ctx, key)
 	if err != nil {
 		if err == ErrCacheMiss {
-			return c.onCacheMiss(ctx, key, dest, builder)
+			c.getMetrics().Track(CacheMiss)
+		} else {
+			c.getMetrics().Track(CacheError)
 		}
 
-		c.getMetrics().Track(CacheError)
-		return err
+		// attempt to fulfill the request on miss and error by calling the builder
+		//
+		// NOTE: this means that if the cache is misconfigured/down the "build" will still happen (as if it was cache miss)
+		return c.onCacheMiss(ctx, key, dest, builder)
 	}
 
 	return c.onCacheHit(dest, bytes)
 }
 
 func (c *Client) onCacheMiss(ctx context.Context, key string, dest BinaryEncoder, builder Builder) error {
-	c.getMetrics().Track(CacheMiss)
-
 	err := builder.Build(ctx, key, dest)
 	if err != nil {
 		c.getMetrics().Track(CacheLambdaError)
