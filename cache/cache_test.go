@@ -160,6 +160,7 @@ func TestClient_cacheCacheError(t *testing.T) {
 	// build a client and mock storage
 	storage := &MockStorage{}
 	storage.On("Get", mock.Anything, key).Return(nil, errors.New("something failed"))
+	storage.On("Set", mock.Anything, key, mock.Anything).Return(nil)
 
 	metrics := &MockMetrics{}
 	metrics.On("Track", CacheError)
@@ -167,14 +168,19 @@ func TestClient_cacheCacheError(t *testing.T) {
 	client := &Client{
 		Storage: storage,
 		Metrics: metrics,
+		Logger:  noopLogger,
 	}
 
 	// make the call
 	resultErr := client.Get(ctx, key, dest, BuilderFunc(func(ctx context.Context, key string, dest BinaryEncoder) error {
-		return errors.New("not implemented")
+		// happy path
+		return nil
 	}))
 
-	assert.NotNil(t, resultErr)
+	assert.Nil(t, resultErr)
+
+	// wait for cache to flush
+	<-time.After(10 * time.Millisecond)
 
 	assert.True(t, storage.AssertExpectations(t))
 	assert.True(t, metrics.AssertExpectations(t))
