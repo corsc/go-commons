@@ -54,7 +54,7 @@ func (c *Client) Get(ctx context.Context, key string, dest BinaryEncoder, builde
 		if err == ErrCacheMiss {
 			c.getMetrics().Track(CacheMiss)
 		} else {
-			c.Logger.Log("cache error: %s", err)
+			c.getLogger().Log("cache error: %s", err)
 			c.getMetrics().Track(CacheError)
 		}
 
