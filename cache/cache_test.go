@@ -168,6 +168,7 @@ func TestClient_cacheCacheError(t *testing.T) {
 	client := &Client{
 		Storage: storage,
 		Metrics: metrics,
+		Logger:  noopLogger,
 	}
 
 	// make the call
