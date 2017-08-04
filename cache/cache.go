@@ -55,7 +55,7 @@ func (c *Client) Get(ctx context.Context, key string, dest BinaryEncoder, builde
 			c.getMetrics().Track(CacheMiss)
 		} else {
 			c.getLogger().Log("cache error: %s", err)
-			c.getMetrics().Track(CacheError)
+			c.getMetrics().Track(CacheGetError)
 		}
 
 		// attempt to fulfill the request on miss and error by calling the builder
@@ -104,12 +104,14 @@ func (c *Client) updateCache(key string, val encoding.BinaryMarshaler) {
 
 	bytes, err := val.MarshalBinary()
 	if err != nil {
+		c.getMetrics().Track(CacheMarshalError)
 		c.getLogger().Log("failed marshal '%s' from cache with err: %s", key, err)
 		return
 	}
 
 	err = c.Storage.Set(ctx, key, bytes)
 	if err != nil {
+		c.getMetrics().Track(CacheSetError)
 		c.getLogger().Log("failed to update item '%s' in cache with err: %s", key, err)
 	}
 }
@@ -118,7 +120,7 @@ func (c *Client) updateCache(key string, val encoding.BinaryMarshaler) {
 func (c *Client) Invalidate(ctx context.Context, key string) error {
 	err := c.Storage.Invalidate(ctx, key)
 	if err != nil {
-		c.getMetrics().Track(CacheError)
+		c.getMetrics().Track(CacheInvalidateError)
 		return err
 	}
 

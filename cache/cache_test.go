@@ -150,7 +150,7 @@ func TestClient_cacheLambdaError(t *testing.T) {
 	assert.True(t, metrics.AssertExpectations(t))
 }
 
-func TestClient_cacheCacheError(t *testing.T) {
+func TestClient_cacheCacheGetError(t *testing.T) {
 	// inputs
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
@@ -163,7 +163,7 @@ func TestClient_cacheCacheError(t *testing.T) {
 	storage.On("Set", mock.Anything, key, mock.Anything).Return(nil)
 
 	metrics := &MockMetrics{}
-	metrics.On("Track", CacheError)
+	metrics.On("Track", CacheGetError)
 
 	client := &Client{
 		Storage: storage,
@@ -174,6 +174,46 @@ func TestClient_cacheCacheError(t *testing.T) {
 	// make the call
 	resultErr := client.Get(ctx, key, dest, BuilderFunc(func(ctx context.Context, key string, dest BinaryEncoder) error {
 		// happy path
+		return nil
+	}))
+
+	assert.Nil(t, resultErr)
+
+	// wait for cache to flush
+	<-time.After(10 * time.Millisecond)
+
+	assert.True(t, storage.AssertExpectations(t))
+	assert.True(t, metrics.AssertExpectations(t))
+}
+
+func TestClient_cacheCacheSetError(t *testing.T) {
+	// inputs
+	ctx, cancelFn := context.WithCancel(context.Background())
+	defer cancelFn()
+	key := getTestKey()
+	dest := &myDTO{}
+
+	// build a client and mock storage
+	storage := &MockStorage{}
+	storage.On("Get", mock.Anything, key).Return(nil, ErrCacheMiss)
+	storage.On("Set", mock.Anything, key, mock.Anything).Return(errors.New("something failed"))
+
+	metrics := &MockMetrics{}
+	metrics.On("Track", CacheMiss)
+	metrics.On("Track", CacheSetError)
+
+	client := &Client{
+		Storage: storage,
+		Metrics: metrics,
+		Logger:  noopLogger,
+	}
+
+	// make the call
+	resultErr := client.Get(ctx, key, dest, BuilderFunc(func(ctx context.Context, key string, dest BinaryEncoder) error {
+		// happy path
+		concrete := dest.(*myDTO)
+		concrete.Name = "John"
+
 		return nil
 	}))
 

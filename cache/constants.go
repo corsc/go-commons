@@ -31,8 +31,14 @@ const (
 	// CacheMiss denotes the key was not found in the cache
 	CacheMiss
 
-	// CacheError denotes an error occurred with the cache or underlying storage
-	CacheError
+	// CacheGetError denotes an error occurred with the cache or underlying storage (during gets)
+	CacheGetError
+
+	// CacheSetError denotes an error occurred with the cache or underlying storage (during sets)
+	CacheSetError
+
+	// CacheInvalidateError denotes an error occurred with the cache or underlying storage (during invalidates)
+	CacheInvalidateError
 
 	// CacheLambdaError denotes an error occurred in the user code (e.g. the Builder caller)
 	// Note: The builder is only called after a cache miss and therefore CacheLambdaError events should not be counted
@@ -43,6 +49,11 @@ const (
 	//
 	// If the BinaryEncoder is implemented correctly, this event should never happen
 	CacheUnmarshalError
+
+	// CacheMarshalError denotes an error occurred in while calling BinaryEncoder.MarshalBinary
+	//
+	// If the BinaryEncoder is implemented correctly, this event should never happen
+	CacheMarshalError
 )
 
 const (
