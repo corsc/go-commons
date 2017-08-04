@@ -54,7 +54,7 @@ func (c *Client) Get(ctx context.Context, key string, dest BinaryEncoder, builde
 		if err == ErrCacheMiss {
 			c.getMetrics().Track(CacheMiss)
 		} else {
-			c.getLogger().Log("cache error: %s", err)
+			c.getLogger().Log("cache get error. key: '%s' error: %s", key, err)
 			c.getMetrics().Track(CacheGetError)
 		}
 
@@ -70,6 +70,7 @@ func (c *Client) Get(ctx context.Context, key string, dest BinaryEncoder, builde
 func (c *Client) onCacheMiss(ctx context.Context, key string, dest BinaryEncoder, builder Builder) error {
 	err := builder.Build(ctx, key, dest)
 	if err != nil {
+		c.getLogger().Log("cache miss build error. key: '%s' error: %s", key, err)
 		c.getMetrics().Track(CacheLambdaError)
 		return err
 	}
@@ -83,6 +84,7 @@ func (c *Client) onCacheMiss(ctx context.Context, key string, dest BinaryEncoder
 func (c *Client) onCacheHit(dest encoding.BinaryUnmarshaler, bytes []byte) error {
 	err := dest.UnmarshalBinary(bytes)
 	if err != nil {
+		c.getLogger().Log("cache hit unmarshal error. error: %s", err)
 		c.getMetrics().Track(CacheUnmarshalError)
 		return err
 	}
@@ -104,15 +106,15 @@ func (c *Client) updateCache(key string, val encoding.BinaryMarshaler) {
 
 	bytes, err := val.MarshalBinary()
 	if err != nil {
+		c.getLogger().Log("cache update marshal error. key: '%s' error: %s", key, err)
 		c.getMetrics().Track(CacheMarshalError)
-		c.getLogger().Log("failed marshal '%s' from cache with err: %s", key, err)
 		return
 	}
 
 	err = c.Storage.Set(ctx, key, bytes)
 	if err != nil {
+		c.getLogger().Log("cache update set error. key: '%s' error: %s", key, err)
 		c.getMetrics().Track(CacheSetError)
-		c.getLogger().Log("failed to update item '%s' in cache with err: %s", key, err)
 	}
 }
 
@@ -120,6 +122,7 @@ func (c *Client) updateCache(key string, val encoding.BinaryMarshaler) {
 func (c *Client) Invalidate(ctx context.Context, key string) error {
 	err := c.Storage.Invalidate(ctx, key)
 	if err != nil {
+		c.getLogger().Log("cache invalidate error. key: '%s' error: %s", key, err)
 		c.getMetrics().Track(CacheInvalidateError)
 		return err
 	}
