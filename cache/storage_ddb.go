@@ -67,7 +67,9 @@ func (r *DynamoDbStorage) Get(ctx context.Context, key string) ([]byte, error) {
 		}
 
 		if len(resp.Item) == 0 {
-			return ErrCacheMiss
+			// cache miss (cannot be returned as error or the CB will track it)
+			resultCh <- nil
+			return nil
 		}
 
 		resultCh <- resp.Item[ddbData].B
@@ -76,6 +78,9 @@ func (r *DynamoDbStorage) Get(ctx context.Context, key string) ([]byte, error) {
 
 	select {
 	case result := <-resultCh:
+		if result == nil {
+			return nil, ErrCacheMiss
+		}
 		// success
 		return result, nil
 
