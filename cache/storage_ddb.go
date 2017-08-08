@@ -48,7 +48,7 @@ type DynamoDbStorage struct {
 // Get implements Storage
 func (r *DynamoDbStorage) Get(ctx context.Context, key string) ([]byte, error) {
 	resultCh := make(chan []byte, 1)
-	errorCh := hystrix.Go(CbRedisStorage, func() error {
+	errorCh := hystrix.Go(CbDynamoDbStorage, func() error {
 		params := &dynamodb.GetItemInput{
 			Key: map[string]*dynamodb.AttributeValue{
 				ddbKey: {
@@ -92,7 +92,7 @@ func (r *DynamoDbStorage) Get(ctx context.Context, key string) ([]byte, error) {
 // Set implements Storage
 func (r *DynamoDbStorage) Set(ctx context.Context, key string, bytes []byte) error {
 	resultCh := make(chan struct{}, 1)
-	errorCh := hystrix.Go(CbRedisStorage, func() error {
+	errorCh := hystrix.Go(CbDynamoDbStorage, func() error {
 		defer close(resultCh)
 
 		timestamp := time.Now().Add(r.TTL).Unix()
@@ -134,7 +134,7 @@ func (r *DynamoDbStorage) Set(ctx context.Context, key string, bytes []byte) err
 // Invalidate implements Storage
 func (r *DynamoDbStorage) Invalidate(ctx context.Context, key string) error {
 	resultCh := make(chan struct{}, 1)
-	errorCh := hystrix.Go(CbRedisStorage, func() error {
+	errorCh := hystrix.Go(CbDynamoDbStorage, func() error {
 		defer close(resultCh)
 
 		params := &dynamodb.DeleteItemInput{
