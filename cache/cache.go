@@ -57,7 +57,7 @@ func (c *Client) Get(ctx context.Context, key string, dest BinaryEncoder, builde
 		}
 
 		c.getLogger().Log("cache get error. key: '%s' error: %s", key, err)
-		c.getMetrics().Track(CacheError)
+		c.getMetrics().Track(CacheGetError)
 		return err
 	}
 
