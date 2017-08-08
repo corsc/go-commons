@@ -73,7 +73,7 @@ func (c *Client) onCacheMiss(ctx context.Context, key string, dest BinaryEncoder
 	}
 
 	atomic.AddInt64(&c.pendingWrites, 1)
-	go c.updateCache(key, dest)
+	go c.Set(context.Background(), key, dest)
 
 	return err
 }
@@ -94,15 +94,16 @@ func (c *Client) onCacheHit(ctx context.Context, key string, dest encoding.Binar
 	return nil
 }
 
-// update the cache with the supplied key/value pair
-func (c *Client) updateCache(key string, val encoding.BinaryMarshaler) {
+// Set will update the cache with the supplied key/value pair
+// NOTE: generally this need not be called is it is called implicitly by Get
+func (c *Client) Set(ctx context.Context, key string, val encoding.BinaryMarshaler) {
 	defer func() {
 		// update tracking
 		atomic.AddInt64(&c.pendingWrites, -1)
 	}()
 
 	// use independent context so we don't miss cache updated
-	ctx, cancelFn := context.WithTimeout(context.Background(), c.getWriteTimeout())
+	ctx, cancelFn := context.WithTimeout(ctx, c.getWriteTimeout())
 	defer cancelFn()
 
 	bytes, err := val.MarshalBinary()
