@@ -53,18 +53,15 @@ func (c *Client) Get(ctx context.Context, key string, dest BinaryEncoder, builde
 	if err != nil {
 		if err == ErrCacheMiss {
 			c.getMetrics().Track(CacheMiss)
-		} else {
-			c.getLogger().Log("cache get error. key: '%s' error: %s", key, err)
-			c.getMetrics().Track(CacheGetError)
+			return c.onCacheMiss(ctx, key, dest, builder)
 		}
 
-		// attempt to fulfill the request on miss and error by calling the builder
-		//
-		// NOTE: this means that if the cache is misconfigured/down the "build" will still happen (as if it was cache miss)
-		return c.onCacheMiss(ctx, key, dest, builder)
+		c.getLogger().Log("cache get error. key: '%s' error: %s", key, err)
+		c.getMetrics().Track(CacheError)
+		return err
 	}
 
-	return c.onCacheHit(dest, bytes)
+	return c.onCacheHit(ctx, key, dest, bytes)
 }
 
 func (c *Client) onCacheMiss(ctx context.Context, key string, dest BinaryEncoder, builder Builder) error {
@@ -81,11 +78,15 @@ func (c *Client) onCacheMiss(ctx context.Context, key string, dest BinaryEncoder
 	return err
 }
 
-func (c *Client) onCacheHit(dest encoding.BinaryUnmarshaler, bytes []byte) error {
+func (c *Client) onCacheHit(ctx context.Context, key string, dest encoding.BinaryUnmarshaler, bytes []byte) error {
 	err := dest.UnmarshalBinary(bytes)
 	if err != nil {
 		c.getLogger().Log("cache hit unmarshal error. error: %s", err)
 		c.getMetrics().Track(CacheUnmarshalError)
+
+		// invalidate to remove "bad" data
+		_ = c.Invalidate(ctx, key)
+
 		return err
 	}
 

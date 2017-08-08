@@ -160,7 +160,6 @@ func TestClient_cacheCacheGetError(t *testing.T) {
 	// build a client and mock storage
 	storage := &MockStorage{}
 	storage.On("Get", mock.Anything, key).Return(nil, errors.New("something failed"))
-	storage.On("Set", mock.Anything, key, mock.Anything).Return(nil)
 
 	metrics := &MockMetrics{}
 	metrics.On("Track", CacheGetError)
@@ -177,7 +176,7 @@ func TestClient_cacheCacheGetError(t *testing.T) {
 		return nil
 	}))
 
-	assert.Nil(t, resultErr)
+	assert.NotNil(t, resultErr)
 
 	// wait for cache to flush
 	<-time.After(10 * time.Millisecond)
@@ -237,6 +236,7 @@ func TestClient_cacheUnmarshalError(t *testing.T) {
 	// build a client and mock storage
 	storage := &MockStorage{}
 	storage.On("Get", mock.Anything, key).Return(data, nil)
+	storage.On("Invalidate", mock.Anything, key).Return(nil)
 
 	metrics := &MockMetrics{}
 	metrics.On("Track", CacheUnmarshalError)
