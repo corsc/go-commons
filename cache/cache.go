@@ -81,7 +81,7 @@ func (c *Client) onCacheMiss(ctx context.Context, key string, dest BinaryEncoder
 func (c *Client) onCacheHit(ctx context.Context, key string, dest encoding.BinaryUnmarshaler, bytes []byte) error {
 	err := dest.UnmarshalBinary(bytes)
 	if err != nil {
-		c.getLogger().Log("cache hit unmarshal error. error: %s", err)
+		c.getLogger().Log("cache hit unmarshal error. key: '%s' error: %s", key, err)
 		c.getMetrics().Track(CacheUnmarshalError)
 
 		// invalidate to remove "bad" data
