@@ -37,7 +37,7 @@ func CSRF(headerKey string, handler http.Handler, logger CSRFLogger, ignoredPath
 
 		if req.Header.Get(headerKey) == "" {
 			if logger != nil {
-				logger.BadRequest("[CSRF] request to '%s' failed due to missing header '%s'", req.URL.Path, headerKey)
+				logger.BadRequest(req, "[CSRF] request to '%s' failed due to missing header '%s'", req.URL.Path, headerKey)
 			}
 			http.Error(resp, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
@@ -58,5 +58,5 @@ func convertPathsToLower(in []string) []string {
 // CSRFLogger allows for logging
 type CSRFLogger interface {
 	// log requests that fail CSRF check
-	BadRequest(msg string, args ...interface{})
+	BadRequest(req *http.Request, msg string, args ...interface{})
 }

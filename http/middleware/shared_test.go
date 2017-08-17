@@ -42,12 +42,12 @@ func (h *testHandler) wasCalled() bool {
 type myLogger struct{}
 
 // BadRequest implements CSRFLogger and InputBodyLogger
-func (l *myLogger) BadRequest(msg string, args ...interface{}) {
+func (l *myLogger) BadRequest(req *http.Request, msg string, args ...interface{}) {
 	fmt.Printf(msg+"\n", args...)
 }
 
 // Request implements InputBodyLogger
-func (l *myLogger) Request(body []byte) {
+func (l *myLogger) Request(req *http.Request, body []byte) {
 	fmt.Printf("Body: %s\n", string(body))
 }
 

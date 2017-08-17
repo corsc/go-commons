@@ -35,16 +35,16 @@ func InputBody(handler http.Handler, dto interface{}, client ...InputBodyLogger)
 
 		contents, err := ioutil.ReadAll(req.Body)
 		if err != nil {
-			logWarn(client, "error reading request body. err: %s", err)
+			logWarn(req, client, "error reading request body. err: %s", err)
 			http.Error(resp, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
-		logBody(client, contents)
+		logBody(req, client, contents)
 
 		err = json.Unmarshal(contents, dtoCopy)
 		if err != nil {
-			logWarn(client, "error during JSON decode of request body. err: %s", err)
+			logWarn(req, client, "error during JSON decode of request body. err: %s", err)
 			http.Error(resp, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -69,27 +69,27 @@ func InputBodySetDTO(req *http.Request, dto interface{}) *http.Request {
 }
 
 // convenience method for logging when the logging client was supplied (via optional/variadic arg)
-func logWarn(client []InputBodyLogger, msg string, args ...interface{}) {
+func logWarn(req *http.Request, client []InputBodyLogger, msg string, args ...interface{}) {
 	if len(client) == 0 {
 		return
 	}
 
-	client[0].BadRequest(msg, args...)
+	client[0].BadRequest(req, msg, args...)
 }
 
-func logBody(client []InputBodyLogger, body []byte) {
+func logBody(req *http.Request, client []InputBodyLogger, body []byte) {
 	if len(client) == 0 {
 		return
 	}
 
-	client[0].Request(body)
+	client[0].Request(req, body)
 }
 
 // InputBodyLogger allows for logging
 type InputBodyLogger interface {
 	// Log bad requests
-	BadRequest(msg string, args ...interface{})
+	BadRequest(req *http.Request, msg string, args ...interface{})
 
 	// Log request bodies
-	Request(body []byte)
+	Request(req *http.Request, body []byte)
 }
