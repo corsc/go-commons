@@ -17,6 +17,7 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 )
@@ -27,13 +28,21 @@ type inputBodyKey int
 var inputBodyDTO inputBodyKey
 
 // InputBody will attempt to populate a copy of the supplied struct and store it in request context.
-func InputBody(handler http.Handler, dto interface{}, client ...LoggingClient) http.HandlerFunc {
+func InputBody(handler http.Handler, dto interface{}, client ...InputBodyLogger) http.HandlerFunc {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		dtoType := reflect.TypeOf(dto)
 		dtoCopy := reflect.New(dtoType.Elem()).Interface()
 
-		decoder := json.NewDecoder(req.Body)
-		err := decoder.Decode(dtoCopy)
+		contents, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			logWarn(client, "error reading request body. err: %s", err)
+			http.Error(resp, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		logBody(client, contents)
+
+		err = json.Unmarshal(contents, dtoCopy)
 		if err != nil {
 			logWarn(client, "error during JSON decode of request body. err: %s", err)
 			http.Error(resp, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -54,16 +63,33 @@ func InputBodyDTO(req *http.Request) interface{} {
 }
 
 // InputBodySetDTO sets the supplied DTO into the context.
-// This method will generally be used onluy during testing.
+// This method will generally be used only during testing.
 func InputBodySetDTO(req *http.Request, dto interface{}) *http.Request {
 	return req.WithContext(context.WithValue(req.Context(), inputBodyDTO, dto))
 }
 
 // convenience method for logging when the logging client was supplied (via optional/variadic arg)
-func logWarn(client []LoggingClient, msg string, args ...interface{}) {
+func logWarn(client []InputBodyLogger, msg string, args ...interface{}) {
 	if len(client) == 0 {
 		return
 	}
 
 	client[0].BadRequest(msg, args...)
+}
+
+func logBody(client []InputBodyLogger, body []byte) {
+	if len(client) == 0 {
+		return
+	}
+
+	client[0].Request(body)
+}
+
+// InputBodyLogger allows for logging
+type InputBodyLogger interface {
+	// Log bad requests
+	BadRequest(msg string, args ...interface{})
+
+	// Log request bodies
+	Request(body []byte)
 }

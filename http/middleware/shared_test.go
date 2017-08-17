@@ -15,7 +15,7 @@
 package middleware
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 )
 
@@ -41,9 +41,14 @@ func (h *testHandler) wasCalled() bool {
 // simple implementation of the LoggingClient interface
 type myLogger struct{}
 
-// BadRequest implements LoggingClient
+// BadRequest implements CSRFLogger and InputBodyLogger
 func (l *myLogger) BadRequest(msg string, args ...interface{}) {
-	log.Printf(msg, args...)
+	fmt.Printf(msg+"\n", args...)
+}
+
+// Request implements InputBodyLogger
+func (l *myLogger) Request(body []byte) {
+	fmt.Printf("Body: %s\n", string(body))
 }
 
 // returns a HTTP handler that always panics

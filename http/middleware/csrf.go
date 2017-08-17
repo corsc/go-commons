@@ -19,10 +19,10 @@ import (
 	"strings"
 )
 
-// CSRF sends custom header that in turn causes the request to consided "complex" and therefore CORS will apply.
+// CSRF sends custom header that in turn causes the request to considered "complex" and therefore CORS will apply.
 //
 // Reference: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
-func CSRF(headerKey string, handler http.Handler, logger LoggingClient, ignoredPaths ...string) http.HandlerFunc {
+func CSRF(headerKey string, handler http.Handler, logger CSRFLogger, ignoredPaths ...string) http.HandlerFunc {
 	ignoredPathsLower := convertPathsToLower(ignoredPaths)
 
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
@@ -53,4 +53,10 @@ func convertPathsToLower(in []string) []string {
 		out[index] = strings.ToLower(path)
 	}
 	return out
+}
+
+// CSRFLogger allows for logging
+type CSRFLogger interface {
+	// log requests that fail CSRF check
+	BadRequest(msg string, args ...interface{})
 }
