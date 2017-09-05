@@ -69,13 +69,15 @@ func (c *Client) onCacheMiss(ctx context.Context, key string, dest BinaryEncoder
 	if err != nil {
 		c.getLogger().Log("cache miss build error. key: '%s' error: %s", key, err)
 		c.getMetrics().Track(CacheLambdaError)
-		return err
+		return &LambdaError{
+			Cause: err,
+		}
 	}
 
 	atomic.AddInt64(&c.pendingWrites, 1)
 	go c.Set(context.Background(), key, dest)
 
-	return err
+	return nil
 }
 
 func (c *Client) onCacheHit(ctx context.Context, key string, dest encoding.BinaryUnmarshaler, bytes []byte) error {
