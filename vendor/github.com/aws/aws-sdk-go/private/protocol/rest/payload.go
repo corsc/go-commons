@@ -1,8 +1,6 @@
 package rest
 
-import (
-	"reflect"
-)
+import "reflect"
 
 // PayloadMember returns the payload field member of i if there is one, or nil.
 func PayloadMember(i interface{}) interface{} {

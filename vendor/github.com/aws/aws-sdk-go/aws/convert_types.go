@@ -1,8 +1,6 @@
 package aws
 
-import (
-	"time"
-)
+import "time"
 
 // String returns a pointer to the string value passed in.
 func String(v string) *string {
@@ -309,6 +307,24 @@ func Time(v time.Time) *time.Time {
 func TimeValue(v *time.Time) time.Time {
 	if v != nil {
 		return *v
+	}
+	return time.Time{}
+}
+
+// SecondsTimeValue converts an int64 pointer to a time.Time value
+// representing seconds since Epoch or time.Time{} if the pointer is nil.
+func SecondsTimeValue(v *int64) time.Time {
+	if v != nil {
+		return time.Unix((*v / 1000), 0)
+	}
+	return time.Time{}
+}
+
+// MillisecondsTimeValue converts an int64 pointer to a time.Time value
+// representing milliseconds sinch Epoch or time.Time{} if the pointer is nil.
+func MillisecondsTimeValue(v *int64) time.Time {
+	if v != nil {
+		return time.Unix(0, (*v * 1000000))
 	}
 	return time.Time{}
 }

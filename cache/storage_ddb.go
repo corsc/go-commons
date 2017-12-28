@@ -22,6 +22,7 @@ import (
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 )
 
 // DynamoDbStorage implements Storage
@@ -36,7 +37,7 @@ import (
 //
 type DynamoDbStorage struct {
 	// Service is the AWS DDB Client instance
-	Service *dynamodb.DynamoDB
+	Service dynamodbiface.DynamoDBAPI
 
 	// TableName is the AWS DDB Table name
 	TableName string
