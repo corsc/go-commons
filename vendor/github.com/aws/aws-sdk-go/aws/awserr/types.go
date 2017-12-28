@@ -1,8 +1,6 @@
 package awserr
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // SprintError returns a string of the formatted error code.
 //

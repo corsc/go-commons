@@ -2,9 +2,7 @@
 
 package aws
 
-import (
-	"context"
-)
+import "context"
 
 var (
 	backgroundCtx = context.Background()

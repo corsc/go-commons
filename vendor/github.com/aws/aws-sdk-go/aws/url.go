@@ -2,9 +2,7 @@
 
 package aws
 
-import (
-	"net/url"
-)
+import "net/url"
 
 // URLHostname will extract the Hostname without port from the URL value.
 //
