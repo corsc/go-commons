@@ -2,9 +2,7 @@
 
 package jmespath
 
-import (
-	"fmt"
-)
+import "fmt"
 
 const _astNodeType_name = "ASTEmptyASTComparatorASTCurrentNodeASTExpRefASTFunctionExpressionASTFieldASTFilterProjectionASTFlattenASTIdentityASTIndexASTIndexExpressionASTKeyValPairASTLiteralASTMultiSelectHashASTMultiSelectListASTOrExpressionASTAndExpressionASTNotExpressionASTPipeASTProjectionASTSubexpressionASTSliceASTValueProjection"
 
