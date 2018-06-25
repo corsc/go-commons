@@ -183,11 +183,12 @@ func testTableExists(svc *dynamodb.DynamoDB, tableName string) bool {
 	})
 
 	if err != nil {
-		panic(err)
+		return false
 	}
 
 	if *(resp.Table.TableStatus) == "ACTIVE" {
 		return true
 	}
+
 	return false
 }

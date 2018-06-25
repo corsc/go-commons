@@ -2,9 +2,7 @@
 
 package jmespath
 
-import (
-	"fmt"
-)
+import "fmt"
 
 const _tokType_name = "tUnknowntStartDottFiltertFlattentLparentRparentLbrackettRbrackettLbracetRbracetOrtPipetNumbertUnquotedIdentifiertQuotedIdentifiertCommatColontLTtLTEtGTtGTEtEQtNEtJSONLiteraltStringLiteraltCurrenttExpreftAndtNottEOF"
 
