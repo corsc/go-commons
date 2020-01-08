@@ -1,5 +1,3 @@
-// +build ddb
-
 // Copyright 2017 Corey Scott http://www.sage42.org/
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +24,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/corsc/go-commons/testing/skip"
 	"github.com/stretchr/testify/assert"
+)
+
+const (
+	DDBTestFlag = "DDB"
 )
 
 func TestDynamoDbStorage_implements(t *testing.T) {
@@ -34,6 +37,8 @@ func TestDynamoDbStorage_implements(t *testing.T) {
 }
 
 func TestDynamoDbStorage_happyPath(t *testing.T) {
+	skip.IfNotSet(t, DDBTestFlag)
+
 	// inputs
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
@@ -58,6 +63,8 @@ func TestDynamoDbStorage_happyPath(t *testing.T) {
 }
 
 func TestDynamoDbStorage_Invalidate(t *testing.T) {
+	skip.IfNotSet(t, DDBTestFlag)
+
 	// inputs
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
@@ -86,6 +93,8 @@ func TestDynamoDbStorage_Invalidate(t *testing.T) {
 }
 
 func TestDynamoDbStorage_getWithCtxDone(t *testing.T) {
+	skip.IfNotSet(t, DDBTestFlag)
+
 	// inputs
 	ctx, cancelFn := context.WithCancel(context.Background())
 	key := getTestKey()
@@ -101,6 +110,8 @@ func TestDynamoDbStorage_getWithCtxDone(t *testing.T) {
 }
 
 func TestDynamoDbStorage_setWithCtxDone(t *testing.T) {
+	skip.IfNotSet(t, DDBTestFlag)
+
 	// inputs
 	ctx, cancelFn := context.WithCancel(context.Background())
 	key := getTestKey()

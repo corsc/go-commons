@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/corsc/go-commons/cache"
@@ -27,6 +28,11 @@ import (
 )
 
 func ExampleClient_normalUsage() {
+	// not required during normal usage
+	if os.Getenv("REDIS") == "" {
+		return
+	}
+
 	// init - called once; perhaps a global variable or member variable
 	cacheClient := &cache.Client{
 		Storage: &cache.RedisStorage{
@@ -51,12 +57,15 @@ func ExampleClient_normalUsage() {
 		return nil
 	}))
 
-	// Output:
-	// Err: <nil>
 	fmt.Printf("Err: %v", err)
 }
 
 func ExampleClient_httpHandler() {
+	// not required during normal usage
+	if os.Getenv("REDIS") == "" {
+		return
+	}
+
 	// init - called once; perhaps a global variable or member variable
 	userCache := &cache.Client{
 		Storage: &cache.RedisStorage{

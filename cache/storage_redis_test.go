@@ -1,5 +1,3 @@
-// +build redis
-
 // Copyright 2017 Corey Scott http://www.sage42.org/
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +19,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/corsc/go-commons/testing/skip"
 	"github.com/garyburd/redigo/redis"
 	"github.com/stretchr/testify/assert"
+)
+
+const (
+	RedisTestFlag = "REDIS"
 )
 
 func TestRedisStorage_implements(t *testing.T) {
@@ -30,6 +33,8 @@ func TestRedisStorage_implements(t *testing.T) {
 }
 
 func TestRedisStorage_happyPath(t *testing.T) {
+	skip.IfNotSet(t, RedisTestFlag)
+
 	// inputs
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
@@ -54,6 +59,8 @@ func TestRedisStorage_happyPath(t *testing.T) {
 }
 
 func TestRedisStorage_Invalidate(t *testing.T) {
+	skip.IfNotSet(t, RedisTestFlag)
+
 	// inputs
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
@@ -82,6 +89,8 @@ func TestRedisStorage_Invalidate(t *testing.T) {
 }
 
 func TestRedisStorage_getWithCtxDone(t *testing.T) {
+	skip.IfNotSet(t, RedisTestFlag)
+
 	// inputs
 	ctx, cancelFn := context.WithCancel(context.Background())
 	key := getTestKey()
@@ -97,7 +106,8 @@ func TestRedisStorage_getWithCtxDone(t *testing.T) {
 }
 
 func TestRedisStorage_setWithCtxDone(t *testing.T) {
-	// inputs
+	skip.IfNotSet(t, RedisTestFlag)
+
 	ctx, cancelFn := context.WithCancel(context.Background())
 	key := getTestKey()
 
