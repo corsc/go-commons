@@ -13,6 +13,6 @@ require (
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/objx v0.0.0-20180531200725-0ab728f62c7f // indirect
 	github.com/stretchr/testify v1.2.2
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
+	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
 	gopkg.in/ini.v1 v1.51.1 // indirect
 )
