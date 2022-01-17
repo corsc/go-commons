@@ -2,7 +2,7 @@
 github.com/afex/hystrix-go/hystrix
 github.com/afex/hystrix-go/hystrix/metric_collector
 github.com/afex/hystrix-go/hystrix/rolling
-# github.com/aws/aws-sdk-go v1.42.25
+# github.com/aws/aws-sdk-go v1.42.35
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
 github.com/aws/aws-sdk-go/aws/awsutil
@@ -46,9 +46,9 @@ github.com/aws/aws-sdk-go/service/sso
 github.com/aws/aws-sdk-go/service/sso/ssoiface
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
-# github.com/davecgh/go-spew v1.1.1
+# github.com/davecgh/go-spew v1.1.0
 github.com/davecgh/go-spew/spew
-# github.com/garyburd/redigo v0.0.0-20180404160726-569eae59ada9
+# github.com/garyburd/redigo v1.6.3
 github.com/garyburd/redigo/internal
 github.com/garyburd/redigo/redis
 # github.com/jmespath/go-jmespath v0.4.0
@@ -57,6 +57,8 @@ github.com/jmespath/go-jmespath
 github.com/pmezard/go-difflib/difflib
 # github.com/stretchr/objx v0.1.0
 github.com/stretchr/objx
-# github.com/stretchr/testify v1.2.2
+# github.com/stretchr/testify v1.7.0
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
+# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+gopkg.in/yaml.v3
